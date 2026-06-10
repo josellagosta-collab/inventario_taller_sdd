@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del material</title>
+</head>
+<body>
+    <h1>Detalle del material</h1>
+
+    <p><strong>Código:</strong> {{ material.codigo_inventario }}</p>
+    <p><strong>Nombre:</strong> {{ material.nombre }}</p>
+    <p><strong>Descripción:</strong> {{ material.descripcion }}</p>
+    <p><strong>Categoría:</strong> {{ material.categoria }}</p>
+    <p><strong>Subcategoría:</strong> {{ material.subcategoria }}</p>
+    <p><strong>Proveedor:</strong> {{ material.proveedor }}</p>
+    <p><strong>Marca:</strong> {{ material.marca }}</p>
+    <p><strong>Modelo:</strong> {{ material.modelo }}</p>
+    <p><strong>Número de serie:</strong> {{ material.numero_serie }}</p>
+    <p><strong>Cantidad:</strong> {{ material.cantidad }}</p>
+    <p><strong>Stock mínimo:</strong> {{ material.stock_minimo }}</p>
+    <p><strong>Precio de compra:</strong> {{ material.precio_compra }}</p>
+    <p><strong>Fecha de compra:</strong> {{ material.fecha_compra }}</p>
+    <p><strong>Garantía hasta:</strong> {{ material.garantia_hasta }}</p>
+    <p><strong>Estado:</strong> {{ material.get_estado_display }}</p>
+    <p><strong>Observaciones:</strong> {{ material.observaciones }}</p>
+
+    <p>
+        <a href="{% url 'inventario:lista_materiales' %}">Volver al listado</a>
+    </p>
+</body>
+</html>

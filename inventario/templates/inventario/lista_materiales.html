@@ -23,7 +23,11 @@
             {% for material in materiales %}
             <tr>
                 <td>{{ material.codigo_inventario }}</td>
-                <td>{{ material.nombre }}</td>
+                <td>
+                     <a href="{% url 'inventario:detalle_material' material.id %}">
+                        {{ material.nombre }}
+                    </a>
+                </td>
                 <td>{{ material.categoria }}</td>
                 <td>{{ material.marca }}</td>
                 <td>{{ material.modelo }}</td>
