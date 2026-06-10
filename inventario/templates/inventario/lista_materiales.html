@@ -113,4 +113,54 @@ Listado de materiales
 
 </table>
 
+<nav aria-label="Paginación de materiales">
+
+    <ul class="pagination">
+
+        {% if materiales.has_previous %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                    Primera
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ materiales.previous_page_number }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                    Anterior
+                </a>
+            </li>
+
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ materiales.number }} de {{ materiales.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if materiales.has_next %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ materiales.next_page_number }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                    Siguiente
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ materiales.paginator.num_pages }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                    Última
+                </a>
+            </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
+
 {% endblock %}
