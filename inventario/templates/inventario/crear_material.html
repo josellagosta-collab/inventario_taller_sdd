@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+Añadir material
+{% endblock %}
+
+{% block content %}
+
+<h1>Añadir material</h1>
+
+<form method="post" class="card p-4">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">
+            Guardar material
+        </button>
+
+        <a href="{% url 'inventario:lista_materiales' %}" class="btn btn-secondary">
+            Cancelar
+        </a>
+    </div>
+
+</form>
+
+{% endblock %}
