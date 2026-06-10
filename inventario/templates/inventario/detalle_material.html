@@ -91,6 +91,11 @@ Detalle del material
             {{ material.observaciones }}
         </p>
 
+        <a href="{% url 'inventario:editar_material' material.id %}"
+             class="btn btn-warning">
+                 Editar material
+        </a>
+
         <a href="{% url 'inventario:lista_materiales' %}"
            class="btn btn-secondary">
             Volver al listado

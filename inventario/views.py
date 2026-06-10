@@ -31,3 +31,21 @@ def crear_material(request):
     return render(request, "inventario/crear_material.html", {
         "form": form
     })
+    
+def editar_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.method == "POST":
+        form = MaterialForm(request.POST, instance=material)
+
+        if form.is_valid():
+            material = form.save()
+            return redirect("inventario:detalle_material", material_id=material.id)
+
+    else:
+        form = MaterialForm(instance=material)
+
+    return render(request, "inventario/editar_material.html", {
+        "form": form,
+        "material": material
+    })
