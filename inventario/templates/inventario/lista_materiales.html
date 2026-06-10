@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario del taller</title>
+</head>
+<body>
+    <h1>Inventario del taller</h1>
+
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Cantidad</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+            <tr>
+                <td>{{ material.codigo_inventario }}</td>
+                <td>{{ material.nombre }}</td>
+                <td>{{ material.categoria }}</td>
+                <td>{{ material.marca }}</td>
+                <td>{{ material.modelo }}</td>
+                <td>{{ material.cantidad }}</td>
+                <td>{{ material.get_estado_display }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No hay materiales registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
