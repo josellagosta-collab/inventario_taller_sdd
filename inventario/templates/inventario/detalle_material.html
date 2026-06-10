@@ -1,108 +1,96 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block title %}
-Detalle del material
+  Detalle del material
 {% endblock %}
 
 {% block content %}
+  <h1>Detalle del material</h1>
 
-<h1>Detalle del material</h1>
-
-<div class="card">
-
+  <div class="card">
     <div class="card-body">
+      <h3 class="card-title">{{ material.nombre }}</h3>
 
-        <h3 class="card-title">
-            {{ material.nombre }}
-        </h3>
+      <p>
+        <strong>Código:</strong>
+        {{ material.codigo_inventario }}
+      </p>
 
-        <p>
-            <strong>Código:</strong>
-            {{ material.codigo_inventario }}
-        </p>
+      <p>
+        <strong>Descripción:</strong>
+        {{ material.descripcion }}
+      </p>
 
-        <p>
-            <strong>Descripción:</strong>
-            {{ material.descripcion }}
-        </p>
+      <p>
+        <strong>Categoría:</strong>
+        {{ material.categoria }}
+      </p>
 
-        <p>
-            <strong>Categoría:</strong>
-            {{ material.categoria }}
-        </p>
+      <p>
+        <strong>Subcategoría:</strong>
+        {{ material.subcategoria }}
+      </p>
 
-        <p>
-            <strong>Subcategoría:</strong>
-            {{ material.subcategoria }}
-        </p>
+      <p>
+        <strong>Proveedor:</strong>
+        {{ material.proveedor }}
+      </p>
 
-        <p>
-            <strong>Proveedor:</strong>
-            {{ material.proveedor }}
-        </p>
+      <p>
+        <strong>Marca:</strong>
+        {{ material.marca }}
+      </p>
 
-        <p>
-            <strong>Marca:</strong>
-            {{ material.marca }}
-        </p>
+      <p>
+        <strong>Modelo:</strong>
+        {{ material.modelo }}
+      </p>
 
-        <p>
-            <strong>Modelo:</strong>
-            {{ material.modelo }}
-        </p>
+      <p>
+        <strong>Número de serie:</strong>
+        {{ material.numero_serie }}
+      </p>
 
-        <p>
-            <strong>Número de serie:</strong>
-            {{ material.numero_serie }}
-        </p>
+      <p>
+        <strong>Cantidad:</strong>
+        {{ material.cantidad }}
+      </p>
 
-        <p>
-            <strong>Cantidad:</strong>
-            {{ material.cantidad }}
-        </p>
+      <p>
+        <strong>Stock mínimo:</strong>
+        {{ material.stock_minimo }}
+      </p>
 
-        <p>
-            <strong>Stock mínimo:</strong>
-            {{ material.stock_minimo }}
-        </p>
+      <p>
+        <strong>Precio compra:</strong>
+        {{ material.precio_compra }}
+      </p>
 
-        <p>
-            <strong>Precio compra:</strong>
-            {{ material.precio_compra }}
-        </p>
+      <p>
+        <strong>Fecha compra:</strong>
+        {{ material.fecha_compra }}
+      </p>
 
-        <p>
-            <strong>Fecha compra:</strong>
-            {{ material.fecha_compra }}
-        </p>
+      <p>
+        <strong>Garantía hasta:</strong>
+        {{ material.garantia_hasta }}
+      </p>
 
-        <p>
-            <strong>Garantía hasta:</strong>
-            {{ material.garantia_hasta }}
-        </p>
+      <p>
+        <strong>Estado:</strong>
+        {{ material.get_estado_display }}
+      </p>
 
-        <p>
-            <strong>Estado:</strong>
-            {{ material.get_estado_display }}
-        </p>
+      <p>
+        <strong>Observaciones:</strong>
+        {{ material.observaciones }}
+      </p>
 
-        <p>
-            <strong>Observaciones:</strong>
-            {{ material.observaciones }}
-        </p>
+      <a href="{% url 'inventario:editar_material' material.id %}" class="btn btn-warning">Editar material</a>
 
-        <a href="{% url 'inventario:editar_material' material.id %}"
-             class="btn btn-warning">
-                 Editar material
-        </a>
+      <a href="{% url 'inventario:retirar_material' material.id %}" class="btn btn-danger">Retirar material</a>
 
-        <a href="{% url 'inventario:lista_materiales' %}"
-           class="btn btn-secondary">
-            Volver al listado
-        </a>
-
+      <a href="{% url 'inventario:lista_materiales' %}" class="btn btn-secondary">Volver al listado</a>
     </div>
-
-</div>
-
+  </div>
 {% endblock %}

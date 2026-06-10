@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+Retirar material
+{% endblock %}
+
+{% block content %}
+
+<h1>Retirar material</h1>
+
+<div class="alert alert-warning">
+    Vas a retirar el siguiente material del inventario:
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4>{{ material.nombre }}</h4>
+        <p><strong>Código:</strong> {{ material.codigo_inventario }}</p>
+        <p><strong>Estado actual:</strong> {{ material.get_estado_display }}</p>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-danger">
+        Confirmar retirada
+    </button>
+
+    <a href="{% url 'inventario:detalle_material' material.id %}" class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>
+
+{% endblock %}

@@ -49,3 +49,15 @@ def editar_material(request, material_id):
         "form": form,
         "material": material
     })
+    
+def retirar_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.method == "POST":
+        material.estado = "retirado"
+        material.save()
+        return redirect("inventario:lista_materiales")
+
+    return render(request, "inventario/retirar_material.html", {
+        "material": material
+    })
