@@ -1,12 +1,38 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Material
+from .models import Material, Categoria
 from .forms import MaterialForm
-
+from django.db.models import Q
 
 def lista_materiales(request):
     materiales = Material.objects.all()
+    categorias = Categoria.objects.all()
+
+    busqueda = request.GET.get("busqueda", "")
+    categoria_id = request.GET.get("categoria", "")
+    estado = request.GET.get("estado", "")
+
+    if busqueda:
+     materiales = materiales.filter(
+        Q(nombre__icontains=busqueda) |
+        Q(codigo_inventario__icontains=busqueda) |
+        Q(marca__icontains=busqueda) |
+        Q(modelo__icontains=busqueda) |
+        Q(numero_serie__icontains=busqueda)
+    )
+
+    if categoria_id:
+        materiales = materiales.filter(categoria_id=categoria_id)
+
+    if estado:
+        materiales = materiales.filter(estado=estado)
+
     return render(request, "inventario/lista_materiales.html", {
-        "materiales": materiales
+        "materiales": materiales,
+        "categorias": categorias,
+        "busqueda": busqueda,
+        "categoria_id": categoria_id,
+        "estado": estado,
+        "estados": Material.ESTADOS,
     })
 
 
