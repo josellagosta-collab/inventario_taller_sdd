@@ -117,7 +117,7 @@ Préstamos
 
         {% for prestamo in prestamos %}
 
-            <tr>
+            <tr class="{% if prestamo.esta_retrasado %}table-danger{% endif %}">
                 <td>{{ prestamo.id }}</td>
                 <td>{{ prestamo.usuario_receptor.username }}</td>
                 <td>{{ prestamo.profesor_responsable.username }}</td>
@@ -130,7 +130,17 @@ Préstamos
 
                 <td>{{ prestamo.fecha_prestamo }}</td>
                 <td>{{ prestamo.fecha_prevista_devolucion }}</td>
-                <td>{{ prestamo.get_estado_display }}</td>
+                <td>
+                    {% if prestamo.esta_retrasado %}
+                        <span class="badge bg-danger">
+                            Retrasado
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            {{ prestamo.get_estado_display }}
+                        </span>
+                    {% endif %}
+                </td>
                 <td>
     {% if prestamo.estado == "activo" %}
         <a href="{% url 'prestamos:devolver_prestamo' prestamo.id %}"

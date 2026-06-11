@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from inventario.models import Material
+from django.utils import timezone
 
 
 class Prestamo(models.Model):
@@ -34,6 +35,12 @@ class Prestamo(models.Model):
     )
 
     observaciones = models.TextField(blank=True, null=True)
+
+    def esta_retrasado(self):
+        return (
+        self.estado == "activo"
+        and self.fecha_prevista_devolucion < timezone.now().date()
+    )
 
     class Meta:
         verbose_name = "Préstamo"
