@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+Eliminar documento
+{% endblock %}
+
+{% block content %}
+
+<h1>Eliminar documento</h1>
+
+<div class="alert alert-danger">
+    Vas a eliminar el siguiente documento. Esta acción no se puede deshacer.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p>
+            <strong>Material:</strong>
+            {{ material.nombre }}
+        </p>
+
+        <p>
+            <strong>Documento:</strong>
+            {{ documento.nombre }}
+        </p>
+
+        <p>
+            <strong>Tipo:</strong>
+            {{ documento.get_tipo_documento_display }}
+        </p>
+
+        <p>
+            <strong>Archivo:</strong>
+            {{ documento.archivo.name }}
+        </p>
+    </div>
+</div>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-danger">
+        Confirmar eliminación
+    </button>
+
+    <a href="{% url 'inventario:detalle_material' material.id %}"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>
+
+{% endblock %}
