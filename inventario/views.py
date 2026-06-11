@@ -4,6 +4,9 @@ from .forms import MaterialForm
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
+from documentos.models import Documento
+from prestamos.models import Prestamo
+from django.utils import timezone
 
 def lista_materiales(request):
     materiales = Material.objects.annotate(total_documentos=Count("documentos"))
@@ -112,6 +115,57 @@ def lista_movimientos(request):
         "usuario"
     ).all()
 
+    busqueda = request.GET.get("busqueda", "")
+    tipo = request.GET.get("tipo", "")
+
+    if busqueda:
+        movimientos = movimientos.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda)
+        )
+
+    if tipo:
+        movimientos = movimientos.filter(tipo=tipo)
+
+    paginator = Paginator(movimientos, 10)
+    numero_pagina = request.GET.get("page")
+    pagina_movimientos = paginator.get_page(numero_pagina)
+
     return render(request, "inventario/lista_movimientos.html", {
-        "movimientos": movimientos,
+        "movimientos": pagina_movimientos,
+        "busqueda": busqueda,
+        "tipo": tipo,
+        "tipos_movimiento": MovimientoInventario.TIPOS_MOVIMIENTO,
+    })
+    
+def dashboard(request):
+    hoy = timezone.now().date()
+
+    total_materiales = Material.objects.count()
+    materiales_disponibles = Material.objects.filter(estado="disponible").count()
+    materiales_prestados = Material.objects.filter(estado="prestado").count()
+    materiales_retirados = Material.objects.filter(estado="retirado").count()
+
+    total_documentos = Documento.objects.count()
+
+    prestamos_activos = Prestamo.objects.filter(estado="activo").count()
+
+    prestamos_retrasados = Prestamo.objects.filter(
+        estado="activo",
+        fecha_prevista_devolucion__lt=hoy
+    ).count()
+
+    total_movimientos = MovimientoInventario.objects.count()
+
+    return render(request, "inventario/dashboard.html", {
+        "total_materiales": total_materiales,
+        "materiales_disponibles": materiales_disponibles,
+        "materiales_prestados": materiales_prestados,
+        "materiales_retirados": materiales_retirados,
+        "total_documentos": total_documentos,
+        "prestamos_activos": prestamos_activos,
+        "prestamos_retrasados": prestamos_retrasados,
+        "total_movimientos": total_movimientos,
     })

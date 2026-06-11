@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h1>Dashboard Inventario Taller</h1>
+
+<div class="row mb-4">
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Materiales</h5>
+                <p class="card-text fs-3">{{ total_materiales }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Disponibles</h5>
+                <p class="card-text fs-3">{{ materiales_disponibles }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Prestados</h5>
+                <p class="card-text fs-3">{{ materiales_prestados }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title">Retirados</h5>
+                <p class="card-text fs-3">{{ materiales_retirados }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row mb-4">
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Documentos</h5>
+                <p class="card-text fs-3">{{ total_documentos }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-dark">
+            <div class="card-body">
+                <h5 class="card-title">Préstamos activos</h5>
+                <p class="card-text fs-3">{{ prestamos_activos }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Retrasados</h5>
+                <p class="card-text fs-3">{{ prestamos_retrasados }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-light border">
+            <div class="card-body">
+                <h5 class="card-title">Movimientos</h5>
+                <p class="card-text fs-3">{{ total_movimientos }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow">
+    <div class="card-header" style="background-color: #0051A0; color: white;">
+        Accesos rápidos
+    </div>
+
+    <div class="card-body">
+
+        <a href="{% url 'inventario:lista_materiales' %}" class="btn btn-primary">
+            Ver materiales
+        </a>
+
+        <a href="{% url 'inventario:crear_material' %}" class="btn btn-success">
+            Añadir material
+        </a>
+
+        <a href="{% url 'prestamos:lista_prestamos' %}" class="btn btn-warning">
+            Ver préstamos
+        </a>
+
+        <a href="{% url 'documentos:lista_documentos' %}" class="btn btn-info">
+            Ver documentos
+        </a>
+
+        <a href="{% url 'inventario:lista_movimientos' %}" class="btn btn-secondary">
+            Ver movimientos
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}
