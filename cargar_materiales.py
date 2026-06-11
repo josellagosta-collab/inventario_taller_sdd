@@ -1,3 +1,9 @@
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "inventario_taller.settings")
+django.setup()
+
 from decimal import Decimal
 from datetime import date
 

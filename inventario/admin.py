@@ -32,8 +32,9 @@ class MaterialAdmin(admin.ModelAdmin):
         "modelo",
         "cantidad",
         "estado",
+        "ubicacion",
     )
-    list_filter = ("estado", "categoria", "subcategoria", "marca")
+    list_filter = ("estado", "categoria", "subcategoria", "marca","ubicacion")
     search_fields = (
         "codigo_inventario",
         "nombre",

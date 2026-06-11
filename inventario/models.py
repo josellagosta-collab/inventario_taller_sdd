@@ -1,4 +1,5 @@
 from django.db import models
+from ubicaciones.models import Ubicacion
 
 
 class Categoria(models.Model):
@@ -108,6 +109,14 @@ class Material(models.Model):
         max_length=50,
         choices=ESTADOS,
         default="disponible"
+    )
+
+    ubicacion = models.ForeignKey(
+    Ubicacion,
+    on_delete=models.SET_NULL,
+    related_name="materiales",
+    blank=True,
+    null=True
     )
 
     observaciones = models.TextField(blank=True, null=True)

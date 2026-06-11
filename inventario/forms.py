@@ -23,6 +23,7 @@ class MaterialForm(forms.ModelForm):
             "fecha_compra",
             "garantia_hasta",
             "estado",
+            "ubicacion",
             "observaciones",
         ]
 
