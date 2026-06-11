@@ -105,3 +105,13 @@ def retirar_material(request, material_id):
     return render(request, "inventario/retirar_material.html", {
         "material": material
     })
+    
+def lista_movimientos(request):
+    movimientos = MovimientoInventario.objects.select_related(
+        "material",
+        "usuario"
+    ).all()
+
+    return render(request, "inventario/lista_movimientos.html", {
+        "movimientos": movimientos,
+    })
