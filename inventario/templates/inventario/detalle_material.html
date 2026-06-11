@@ -134,4 +134,50 @@
       <a href="{% url 'inventario:lista_materiales' %}" class="btn btn-secondary">Volver al listado</a>
     </div>
   </div>
+
+<hr>
+
+<h2>Movimientos de inventario</h2>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Usuario</th>
+            <th>Descripción</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for movimiento in material.movimientos.all %}
+
+            <tr>
+                <td>{{ movimiento.fecha }}</td>
+                <td>{{ movimiento.get_tipo_display }}</td>
+                <td>
+                    {% if movimiento.usuario %}
+                        {{ movimiento.usuario.username }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ movimiento.descripcion }}</td>
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="4" class="text-center">
+                    No hay movimientos registrados.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
 {% endblock %}

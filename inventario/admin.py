@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import Categoria, Subcategoria, Proveedor, Material
-
+from .models import Categoria, Subcategoria, Proveedor, Material, MovimientoInventario
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
@@ -41,4 +40,24 @@ class MaterialAdmin(admin.ModelAdmin):
         "marca",
         "modelo",
         "numero_serie",
+    )
+    
+@admin.register(MovimientoInventario)
+class MovimientoInventarioAdmin(admin.ModelAdmin):
+    list_display = (
+        "material",
+        "tipo",
+        "usuario",
+        "fecha",
+    )
+
+    list_filter = (
+        "tipo",
+        "fecha",
+    )
+
+    search_fields = (
+        "material__nombre",
+        "material__codigo_inventario",
+        "descripcion",
     )

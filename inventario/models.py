@@ -1,5 +1,6 @@
 from django.db import models
 from ubicaciones.models import Ubicacion
+from django.contrib.auth.models import User
 
 
 class Categoria(models.Model):
@@ -131,3 +132,47 @@ class Material(models.Model):
 
     def __str__(self):
         return f"{self.codigo_inventario} - {self.nombre}"
+    
+from django.contrib.auth.models import User
+
+
+class MovimientoInventario(models.Model):
+    TIPOS_MOVIMIENTO = [
+        ("alta", "Alta"),
+        ("edicion", "Edición"),
+        ("retirada", "Retirada"),
+        ("prestamo", "Préstamo"),
+        ("devolucion", "Devolución"),
+        ("traslado", "Traslado"),
+        ("ajuste", "Ajuste"),
+    ]
+
+    material = models.ForeignKey(
+        Material,
+        on_delete=models.CASCADE,
+        related_name="movimientos"
+    )
+
+    tipo = models.CharField(
+        max_length=50,
+        choices=TIPOS_MOVIMIENTO
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+
+    descripcion = models.TextField(blank=True, null=True)
+
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Movimiento de inventario"
+        verbose_name_plural = "Movimientos de inventario"
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return f"{self.material.nombre} - {self.get_tipo_display()}"

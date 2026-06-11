@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Material, Categoria
+from .models import Material, Categoria, MovimientoInventario
 from .forms import MaterialForm
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -55,6 +55,12 @@ def crear_material(request):
 
         if form.is_valid():
             material = form.save()
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="alta",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion="Alta de material desde la web"
+            )
             return redirect("inventario:detalle_material", material_id=material.id)
 
     else:
@@ -88,6 +94,12 @@ def retirar_material(request, material_id):
     if request.method == "POST":
         material.estado = "retirado"
         material.save()
+        MovimientoInventario.objects.create(
+            material=material,
+            tipo="retirada",
+            usuario=request.user if request.user.is_authenticated else None,
+            descripcion="Retirada lógica de material"
+    )
         return redirect("inventario:lista_materiales")
 
     return render(request, "inventario/retirar_material.html", {

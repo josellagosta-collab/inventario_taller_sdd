@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from inventario.models import MovimientoInventario
 
 def crear_prestamo(request):
     if request.method == "POST":
@@ -20,6 +21,14 @@ def crear_prestamo(request):
             material = linea.material
             material.estado = "prestado"
             material.save()
+
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="prestamo",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion=f"Préstamo registrado. Préstamo ID: {prestamo.id}"
+        )
+          
 
             return redirect("prestamos:lista_prestamos")
 
@@ -99,6 +108,12 @@ def devolver_prestamo(request, prestamo_id):
             material = linea.material
             material.estado = "disponible"
             material.save()
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="devolucion",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion=f"Devolución registrada. Préstamo ID: {prestamo.id}"
+            )
 
         return redirect("prestamos:lista_prestamos")
     
