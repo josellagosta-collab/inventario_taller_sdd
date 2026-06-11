@@ -85,6 +85,7 @@ Listado de materiales
             <th>Modelo</th>
             <th>Estado</th>
             <th>Ubicación</th>
+            <th>Documentos</th>
         </tr>
     </thead>
 
@@ -106,6 +107,7 @@ Listado de materiales
             <td>{{ material.modelo }}</td>
             <td>{{ material.get_estado_display }}</td>
             <td>{{ material.ubicacion }}</td>
+            <td><span class="badge bg-info text-dark">{{ material.total_documentos }}</span></td>
 
         </tr>
 

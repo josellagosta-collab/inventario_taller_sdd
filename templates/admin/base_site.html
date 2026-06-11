@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin_custom.css' %}">
+{% endblock %}
+
+{% block branding %}
+
+<div style="display: flex; align-items: center; gap: 15px;">
+    <img src="{% static 'images/logo_monlau.png' %}"
+         alt="Logo Monlau"
+         style="height: 55px;">
+
+    <h1 id="site-name" style="margin: 0;">
+        <a href="{% url 'admin:index' %}"
+           style="color: white; text-decoration: none;">
+            Administración Inventario Taller
+        </a>
+    </h1>
+</div>
+
+{% endblock %}
+
+{% block nav-global %}
+
+<div style="margin-top: 10px;">
+    <a href="{% url 'inventario:lista_materiales' %}"
+       style="color: white; font-weight: bold; margin-right: 20px;">
+        Ir a Materiales
+    </a>
+
+    <a href="{% url 'documentos:lista_documentos' %}"
+       style="color: white; font-weight: bold;">
+        Ir a Documentos
+    </a>
+</div>
+
+{% endblock %}

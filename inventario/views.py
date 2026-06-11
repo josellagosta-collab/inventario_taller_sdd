@@ -3,9 +3,10 @@ from .models import Material, Categoria
 from .forms import MaterialForm
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.db.models import Count
 
 def lista_materiales(request):
-    materiales = Material.objects.all()
+    materiales = Material.objects.annotate(total_documentos=Count("documentos"))
     categorias = Categoria.objects.all()
 
     busqueda = request.GET.get("busqueda", "")
