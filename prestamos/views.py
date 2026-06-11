@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import PrestamoForm, LineaPrestamoForm
-
+from .models import Prestamo
 
 def crear_prestamo(request):
     if request.method == "POST":
@@ -27,4 +27,14 @@ def crear_prestamo(request):
     return render(request, "prestamos/crear_prestamo.html", {
         "prestamo_form": prestamo_form,
         "linea_form": linea_form,
+    })
+    
+def lista_prestamos(request):
+    prestamos = Prestamo.objects.select_related(
+        "usuario_receptor",
+        "profesor_responsable"
+    ).prefetch_related("lineas__material")
+
+    return render(request, "prestamos/lista_prestamos.html", {
+        "prestamos": prestamos,
     })
