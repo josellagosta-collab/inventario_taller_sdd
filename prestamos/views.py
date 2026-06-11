@@ -1,6 +1,7 @@
-from django.shortcuts import render, redirect
 from .forms import PrestamoForm, LineaPrestamoForm
 from .models import Prestamo
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 
 def crear_prestamo(request):
     if request.method == "POST":
@@ -37,4 +38,23 @@ def lista_prestamos(request):
 
     return render(request, "prestamos/lista_prestamos.html", {
         "prestamos": prestamos,
+    })
+    
+def devolver_prestamo(request, prestamo_id):
+    prestamo = get_object_or_404(Prestamo, id=prestamo_id)
+
+    if request.method == "POST":
+        prestamo.estado = "devuelto"
+        prestamo.fecha_devolucion_real = timezone.now().date()
+        prestamo.save()
+
+        for linea in prestamo.lineas.all():
+            material = linea.material
+            material.estado = "disponible"
+            material.save()
+
+        return redirect("prestamos:lista_prestamos")
+
+    return render(request, "prestamos/devolver_prestamo.html", {
+        "prestamo": prestamo,
     })

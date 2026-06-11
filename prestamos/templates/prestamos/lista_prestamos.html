@@ -24,6 +24,7 @@ Préstamos
             <th>Fecha préstamo</th>
             <th>Fecha prevista devolución</th>
             <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
 
@@ -45,12 +46,24 @@ Préstamos
                 <td>{{ prestamo.fecha_prestamo }}</td>
                 <td>{{ prestamo.fecha_prevista_devolucion }}</td>
                 <td>{{ prestamo.get_estado_display }}</td>
+                <td>
+    {% if prestamo.estado == "activo" %}
+        <a href="{% url 'prestamos:devolver_prestamo' prestamo.id %}"
+           class="btn btn-sm btn-success">
+            Devolver
+        </a>
+    {% else %}
+        <span class="text-muted">
+            Sin acciones
+        </span>
+    {% endif %}
+</td>
             </tr>
 
         {% empty %}
 
             <tr>
-                <td colspan="7" class="text-center">
+                <td colspan="8" class="text-center">
                     No hay préstamos registrados.
                 </td>
             </tr>

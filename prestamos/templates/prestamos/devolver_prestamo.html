@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}
+Devolver préstamo
+{% endblock %}
+
+{% block content %}
+
+<h1>Devolver préstamo</h1>
+
+<div class="alert alert-warning">
+    Vas a registrar la devolución de este préstamo.
+</div>
+
+<div class="card mb-3">
+
+    <div class="card-body">
+
+        <p>
+            <strong>ID préstamo:</strong>
+            {{ prestamo.id }}
+        </p>
+
+        <p>
+            <strong>Usuario receptor:</strong>
+            {{ prestamo.usuario_receptor.username }}
+        </p>
+
+        <p>
+            <strong>Profesor responsable:</strong>
+            {{ prestamo.profesor_responsable.username }}
+        </p>
+
+        <p>
+            <strong>Fecha préstamo:</strong>
+            {{ prestamo.fecha_prestamo }}
+        </p>
+
+        <p>
+            <strong>Fecha prevista devolución:</strong>
+            {{ prestamo.fecha_prevista_devolucion }}
+        </p>
+
+        <p>
+            <strong>Estado actual:</strong>
+            {{ prestamo.get_estado_display }}
+        </p>
+
+        <hr>
+
+        <h5>Material prestado</h5>
+
+        <ul>
+            {% for linea in prestamo.lineas.all %}
+                <li>
+                    {{ linea.material.nombre }} x {{ linea.cantidad }}
+                </li>
+            {% endfor %}
+        </ul>
+
+    </div>
+
+</div>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-success">
+        Confirmar devolución
+    </button>
+
+    <a href="{% url 'prestamos:lista_prestamos' %}"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>
+
+{% endblock %}
