@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from inventario.models import Material
 from .forms import DocumentoForm
 from .models import Documento
+from django.db.models import Q
 
 def subir_documento(request, material_id):
     material = get_object_or_404(Material, id=material_id)
@@ -45,6 +46,23 @@ def eliminar_documento(request, documento_id):
 def lista_documentos(request):
     documentos = Documento.objects.select_related("material", "usuario").all()
 
+    busqueda = request.GET.get("busqueda", "")
+    tipo_documento = request.GET.get("tipo_documento", "")
+
+    if busqueda:
+        documentos = documentos.filter(
+            Q(nombre__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if tipo_documento:
+        documentos = documentos.filter(tipo_documento=tipo_documento)
+
     return render(request, "documentos/lista_documentos.html", {
         "documentos": documentos,
+        "busqueda": busqueda,
+        "tipo_documento": tipo_documento,
+        "tipos_documento": Documento.TIPOS_DOCUMENTO,
     })
