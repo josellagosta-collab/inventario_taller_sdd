@@ -2,6 +2,7 @@ from .forms import PrestamoForm, LineaPrestamoForm
 from .models import Prestamo
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 def crear_prestamo(request):
     if request.method == "POST":
@@ -36,8 +37,28 @@ def lista_prestamos(request):
         "profesor_responsable"
     ).prefetch_related("lineas__material")
 
+    usuarios = User.objects.all()
+
+    estado = request.GET.get("estado", "")
+    usuario_receptor = request.GET.get("usuario_receptor", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        prestamos = prestamos.filter(estado=estado)
+
+    if usuario_receptor:
+        prestamos = prestamos.filter(usuario_receptor_id=usuario_receptor)
+
+    if profesor_responsable:
+        prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
+
     return render(request, "prestamos/lista_prestamos.html", {
         "prestamos": prestamos,
+        "usuarios": usuarios,
+        "estado": estado,
+        "usuario_receptor": usuario_receptor,
+        "profesor_responsable": profesor_responsable,
+        "estados": Prestamo.ESTADOS,
     })
     
 def devolver_prestamo(request, prestamo_id):
