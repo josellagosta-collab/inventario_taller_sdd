@@ -94,7 +94,58 @@
       <a href="{% url 'inventario:editar_material' material.id %}" class="btn btn-warning">Editar material</a>
 
       <a href="{% url 'inventario:retirar_material' material.id %}" class="btn btn-danger">Retirar material</a>
+<hr>
 
+<h2>Documentación asociada</h2>
+
+<a href="{% url 'documentos:subir_documento' material.id %}"
+   class="btn btn-primary mb-3">
+    Subir documento
+</a>
+
+{% if material.documentos.all %}
+
+    <table class="table table-bordered">
+
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Fecha subida</th>
+                <th>Archivo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for documento in material.documentos.all %}
+
+                <tr>
+                    <td>{{ documento.nombre }}</td>
+                    <td>{{ documento.get_tipo_documento_display }}</td>
+                    <td>{{ documento.fecha_subida }}</td>
+                    <td>
+                        <a href="{{ documento.archivo.url }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary">
+                            Ver / Descargar
+                        </a>
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+{% else %}
+
+    <p class="text-muted">
+        Este material todavía no tiene documentos asociados.
+    </p>
+
+{% endif %}
       <a href="{% url 'inventario:lista_materiales' %}" class="btn btn-secondary">Volver al listado</a>
     </div>
   </div>
