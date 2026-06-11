@@ -3,6 +3,7 @@ from inventario.models import Material
 from .forms import DocumentoForm
 from .models import Documento
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 def subir_documento(request, material_id):
     material = get_object_or_404(Material, id=material_id)
@@ -60,8 +61,12 @@ def lista_documentos(request):
     if tipo_documento:
         documentos = documentos.filter(tipo_documento=tipo_documento)
 
+    paginator = Paginator(documentos, 10)
+    numero_pagina = request.GET.get("page")
+    pagina_documentos = paginator.get_page(numero_pagina)
+
     return render(request, "documentos/lista_documentos.html", {
-        "documentos": documentos,
+        "documentos": pagina_documentos,
         "busqueda": busqueda,
         "tipo_documento": tipo_documento,
         "tipos_documento": Documento.TIPOS_DOCUMENTO,

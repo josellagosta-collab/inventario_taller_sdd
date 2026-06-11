@@ -134,4 +134,54 @@ Documentos
 
 </table>
 
+<nav aria-label="Paginación de documentos">
+
+    <ul class="pagination">
+
+        {% if documentos.has_previous %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&busqueda={{ busqueda }}&tipo_documento={{ tipo_documento }}">
+                    Primera
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ documentos.previous_page_number }}&busqueda={{ busqueda }}&tipo_documento={{ tipo_documento }}">
+                    Anterior
+                </a>
+            </li>
+
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ documentos.number }} de {{ documentos.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if documentos.has_next %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ documentos.next_page_number }}&busqueda={{ busqueda }}&tipo_documento={{ tipo_documento }}">
+                    Siguiente
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ documentos.paginator.num_pages }}&busqueda={{ busqueda }}&tipo_documento={{ tipo_documento }}">
+                    Última
+                </a>
+            </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
+
 {% endblock %}
