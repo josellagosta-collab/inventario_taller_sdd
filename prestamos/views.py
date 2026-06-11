@@ -5,7 +5,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from inventario.models import MovimientoInventario
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def crear_prestamo(request):
     if request.method == "POST":
         prestamo_form = PrestamoForm(request.POST)
@@ -41,6 +43,7 @@ def crear_prestamo(request):
         "linea_form": linea_form,
     })
     
+@login_required
 def lista_prestamos(request):
     prestamos = Prestamo.objects.select_related(
         "usuario_receptor",
@@ -96,6 +99,7 @@ def lista_prestamos(request):
         "total_retrasados": total_retrasados,
     })
     
+@login_required
 def devolver_prestamo(request, prestamo_id):
     prestamo = get_object_or_404(Prestamo, id=prestamo_id)
 
@@ -142,6 +146,7 @@ def devolver_prestamo(request, prestamo_id):
         "total_retrasados": total_retrasados,
     })
     
+@login_required
 def detalle_prestamo(request, prestamo_id):
     prestamo = get_object_or_404(
         Prestamo.objects.select_related(

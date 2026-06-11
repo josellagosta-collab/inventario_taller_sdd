@@ -7,7 +7,9 @@ from django.db.models import Count
 from documentos.models import Documento
 from prestamos.models import Prestamo
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def lista_materiales(request):
     materiales = Material.objects.annotate(total_documentos=Count("documentos"))
     categorias = Categoria.objects.all()
@@ -45,6 +47,7 @@ def lista_materiales(request):
     })
 
 
+@login_required
 def detalle_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
     return render(request, "inventario/detalle_material.html", {
@@ -52,6 +55,7 @@ def detalle_material(request, material_id):
     })
 
 
+@login_required
 def crear_material(request):
     if request.method == "POST":
         form = MaterialForm(request.POST)
@@ -73,6 +77,7 @@ def crear_material(request):
         "form": form
     })
     
+@login_required
 def editar_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -91,6 +96,7 @@ def editar_material(request, material_id):
         "material": material
     })
     
+@login_required
 def retirar_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -109,6 +115,7 @@ def retirar_material(request, material_id):
         "material": material
     })
     
+@login_required
 def lista_movimientos(request):
     movimientos = MovimientoInventario.objects.select_related(
         "material",
@@ -140,6 +147,7 @@ def lista_movimientos(request):
         "tipos_movimiento": MovimientoInventario.TIPOS_MOVIMIENTO,
     })
     
+@login_required
 def dashboard(request):
     hoy = timezone.now().date()
 

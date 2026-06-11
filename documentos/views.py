@@ -4,7 +4,9 @@ from .forms import DocumentoForm
 from .models import Documento
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def subir_documento(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -30,6 +32,7 @@ def subir_documento(request, material_id):
         "material": material,
     })
     
+@login_required
 def eliminar_documento(request, documento_id):
     documento = get_object_or_404(Documento, id=documento_id)
     material = documento.material
@@ -44,6 +47,7 @@ def eliminar_documento(request, documento_id):
         "material": material,
     })
     
+@login_required
 def lista_documentos(request):
     documentos = Documento.objects.select_related("material", "usuario").all()
 
