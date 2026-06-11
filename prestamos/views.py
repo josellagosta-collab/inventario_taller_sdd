@@ -126,3 +126,16 @@ def devolver_prestamo(request, prestamo_id):
         "total_devueltos": total_devueltos,
         "total_retrasados": total_retrasados,
     })
+    
+def detalle_prestamo(request, prestamo_id):
+    prestamo = get_object_or_404(
+        Prestamo.objects.select_related(
+            "usuario_receptor",
+            "profesor_responsable"
+        ).prefetch_related("lineas__material"),
+        id=prestamo_id
+    )
+
+    return render(request, "prestamos/detalle_prestamo.html", {
+        "prestamo": prestamo,
+    })

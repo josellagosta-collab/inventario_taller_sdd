@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detalle préstamo
+{% endblock %}
+
+{% block content %}
+
+<h1>Detalle del préstamo</h1>
+
+<div class="card shadow mb-4">
+
+    <div class="card-header bg-primary text-white">
+        Préstamo #{{ prestamo.id }}
+    </div>
+
+    <div class="card-body">
+
+        <p>
+            <strong>Usuario receptor:</strong>
+            {{ prestamo.usuario_receptor.username }}
+        </p>
+
+        <p>
+            <strong>Profesor responsable:</strong>
+            {{ prestamo.profesor_responsable.username }}
+        </p>
+
+        <p>
+            <strong>Fecha préstamo:</strong>
+            {{ prestamo.fecha_prestamo }}
+        </p>
+
+        <p>
+            <strong>Fecha prevista devolución:</strong>
+            {{ prestamo.fecha_prevista_devolucion }}
+        </p>
+
+        <p>
+            <strong>Fecha devolución real:</strong>
+            {{ prestamo.fecha_devolucion_real|default:"-" }}
+        </p>
+
+        <p>
+            <strong>Estado:</strong>
+
+            {% if prestamo.esta_retrasado %}
+                <span class="badge bg-danger">
+                    Retrasado
+                </span>
+            {% else %}
+                <span class="badge bg-secondary">
+                    {{ prestamo.get_estado_display }}
+                </span>
+            {% endif %}
+        </p>
+
+        <p>
+            <strong>Observaciones:</strong>
+            {{ prestamo.observaciones|default:"Sin observaciones" }}
+        </p>
+
+    </div>
+
+</div>
+
+<h2>Material prestado</h2>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Material</th>
+            <th>Código</th>
+            <th>Cantidad</th>
+            <th>Estado actual</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for linea in prestamo.lineas.all %}
+
+            <tr>
+                <td>
+                    <a href="{% url 'inventario:detalle_material' linea.material.id %}">
+                        {{ linea.material.nombre }}
+                    </a>
+                </td>
+                <td>{{ linea.material.codigo_inventario }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>{{ linea.material.get_estado_display }}</td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+<div class="mt-3">
+
+    {% if prestamo.estado == "activo" %}
+        <a href="{% url 'prestamos:devolver_prestamo' prestamo.id %}"
+           class="btn btn-success">
+            Registrar devolución
+        </a>
+    {% endif %}
+
+    <a href="{% url 'prestamos:lista_prestamos' %}"
+       class="btn btn-secondary">
+        Volver al listado
+    </a>
+
+</div>
+
+{% endblock %}

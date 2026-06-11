@@ -166,7 +166,11 @@ Préstamos
         {% for prestamo in prestamos %}
 
             <tr class="{% if prestamo.esta_retrasado %}table-danger{% endif %}">
-                <td>{{ prestamo.id }}</td>
+                <td>
+                    <a href="{% url 'prestamos:detalle_prestamo' prestamo.id %}">
+                        #{{ prestamo.id }}
+                    </a>
+                </td>
                 <td>{{ prestamo.usuario_receptor.username }}</td>
                 <td>{{ prestamo.profesor_responsable.username }}</td>
 
