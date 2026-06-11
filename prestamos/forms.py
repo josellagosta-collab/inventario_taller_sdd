@@ -1,6 +1,6 @@
 from django import forms
 from .models import Prestamo, LineaPrestamo
-
+from inventario.models import Material
 
 class PrestamoForm(forms.ModelForm):
 
@@ -53,6 +53,10 @@ class LineaPrestamoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields["material"].queryset = Material.objects.filter(
+            estado="disponible"
+        )
+
         for campo in self.fields.values():
             campo.widget.attrs["class"] = "form-control"
 
@@ -65,3 +69,13 @@ class LineaPrestamoForm(forms.ModelForm):
                 )
             ):
                 campo.widget.attrs["class"] = "form-select"
+
+    def clean_material(self):
+        material = self.cleaned_data["material"]
+
+        if material.estado != "disponible":
+            raise forms.ValidationError(
+                "Este material no está disponible para préstamo."
+            )
+
+        return material
