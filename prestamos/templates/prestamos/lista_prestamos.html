@@ -159,4 +159,53 @@ Préstamos
 
 </table>
 
+<nav aria-label="Paginación de préstamos">
+
+    <ul class="pagination">
+
+        {% if prestamos.has_previous %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}">
+                    Primera
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ prestamos.previous_page_number }}&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}">
+                    Anterior
+                </a>
+            </li>
+
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ prestamos.number }} de {{ prestamos.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if prestamos.has_next %}
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ prestamos.next_page_number }}&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}">
+                    Siguiente
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ prestamos.paginator.num_pages }}&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}">
+                    Última
+                </a>
+            </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
 {% endblock %}

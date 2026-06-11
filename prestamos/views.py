@@ -3,6 +3,7 @@ from .models import Prestamo
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 
 def crear_prestamo(request):
     if request.method == "POST":
@@ -51,9 +52,13 @@ def lista_prestamos(request):
 
     if profesor_responsable:
         prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
+        
+    paginator = Paginator(prestamos, 10)
+    numero_pagina = request.GET.get("page")
+    pagina_prestamos = paginator.get_page(numero_pagina)    
 
     return render(request, "prestamos/lista_prestamos.html", {
-        "prestamos": prestamos,
+        "prestamos": pagina_prestamos,
         "usuarios": usuarios,
         "estado": estado,
         "usuario_receptor": usuario_receptor,
