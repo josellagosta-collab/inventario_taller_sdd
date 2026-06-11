@@ -52,10 +52,27 @@ def lista_prestamos(request):
 
     if profesor_responsable:
         prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
-        
+
+    hoy = timezone.now().date()
+
+    total_prestamos = Prestamo.objects.count()
+
+    total_activos = Prestamo.objects.filter(
+        estado="activo"
+    ).count()
+
+    total_devueltos = Prestamo.objects.filter(
+        estado="devuelto"
+    ).count()
+
+    total_retrasados = Prestamo.objects.filter(
+        estado="activo",
+        fecha_prevista_devolucion__lt=hoy
+    ).count()
+
     paginator = Paginator(prestamos, 10)
     numero_pagina = request.GET.get("page")
-    pagina_prestamos = paginator.get_page(numero_pagina)    
+    pagina_prestamos = paginator.get_page(numero_pagina)
 
     return render(request, "prestamos/lista_prestamos.html", {
         "prestamos": pagina_prestamos,
@@ -64,6 +81,10 @@ def lista_prestamos(request):
         "usuario_receptor": usuario_receptor,
         "profesor_responsable": profesor_responsable,
         "estados": Prestamo.ESTADOS,
+        "total_prestamos": total_prestamos,
+        "total_activos": total_activos,
+        "total_devueltos": total_devueltos,
+        "total_retrasados": total_retrasados,
     })
     
 def devolver_prestamo(request, prestamo_id):
@@ -80,7 +101,28 @@ def devolver_prestamo(request, prestamo_id):
             material.save()
 
         return redirect("prestamos:lista_prestamos")
+    
+        hoy = timezone.now().date()
+
+    total_prestamos = Prestamo.objects.count()
+
+    total_activos = Prestamo.objects.filter(
+        estado="activo"
+    ).count()
+
+    total_devueltos = Prestamo.objects.filter(
+        estado="devuelto"
+    ).count()
+
+    total_retrasados = Prestamo.objects.filter(
+        estado="activo",
+        fecha_prevista_devolucion__lt=hoy
+    ).count()
 
     return render(request, "prestamos/devolver_prestamo.html", {
         "prestamo": prestamo,
+        "total_prestamos": total_prestamos,
+        "total_activos": total_activos,
+        "total_devueltos": total_devueltos,
+        "total_retrasados": total_retrasados,
     })

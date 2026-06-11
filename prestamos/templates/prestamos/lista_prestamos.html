@@ -8,6 +8,54 @@ Préstamos
 
 <h1>Préstamos</h1>
 
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total</h5>
+                <p class="card-text fs-3">
+                    {{ total_prestamos }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Activos</h5>
+                <p class="card-text fs-3">
+                    {{ total_activos }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Devueltos</h5>
+                <p class="card-text fs-3">
+                    {{ total_devueltos }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Retrasados</h5>
+                <p class="card-text fs-3">
+                    {{ total_retrasados }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <a href="{% url 'prestamos:crear_prestamo' %}"
    class="btn btn-success mb-3">
     Nuevo préstamo
