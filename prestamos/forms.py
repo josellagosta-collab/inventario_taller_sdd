@@ -1,0 +1,67 @@
+from django import forms
+from .models import Prestamo, LineaPrestamo
+
+
+class PrestamoForm(forms.ModelForm):
+
+    class Meta:
+        model = Prestamo
+
+        fields = [
+            "usuario_receptor",
+            "profesor_responsable",
+            "fecha_prevista_devolucion",
+            "observaciones",
+        ]
+
+        widgets = {
+            "fecha_prevista_devolucion": forms.DateInput(
+                attrs={"type": "date"}
+            ),
+            "observaciones": forms.Textarea(
+                attrs={"rows": 3}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for campo in self.fields.values():
+            campo.widget.attrs["class"] = "form-control"
+
+        for nombre, campo in self.fields.items():
+            if isinstance(
+                campo.widget,
+                (
+                    forms.Select,
+                    forms.SelectMultiple
+                )
+            ):
+                campo.widget.attrs["class"] = "form-select"
+
+
+class LineaPrestamoForm(forms.ModelForm):
+
+    class Meta:
+        model = LineaPrestamo
+
+        fields = [
+            "material",
+            "cantidad",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for campo in self.fields.values():
+            campo.widget.attrs["class"] = "form-control"
+
+        for nombre, campo in self.fields.items():
+            if isinstance(
+                campo.widget,
+                (
+                    forms.Select,
+                    forms.SelectMultiple
+                )
+            ):
+                campo.widget.attrs["class"] = "form-select"

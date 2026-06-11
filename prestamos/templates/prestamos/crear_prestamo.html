@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+Nuevo préstamo
+{% endblock %}
+
+{% block content %}
+
+<h1>Nuevo préstamo</h1>
+
+<div class="card shadow">
+
+    <div class="card-header bg-primary text-white">
+        Registrar préstamo de material
+    </div>
+
+    <div class="card-body">
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <h4>Datos del préstamo</h4>
+
+            {% for field in prestamo_form %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <div class="text-danger mt-1">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <hr>
+
+            <h4>Material prestado</h4>
+
+            {% for field in linea_form %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <div class="text-danger mt-1">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">
+                Guardar préstamo
+            </button>
+
+            <a href="{% url 'inventario:lista_materiales' %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
