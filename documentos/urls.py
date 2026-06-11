@@ -5,6 +5,11 @@ app_name = "documentos"
 
 urlpatterns = [
     path(
+        "documentos/",
+        views.lista_documentos,
+        name="lista_documentos"
+    ),
+    path(
         "materiales/<int:material_id>/documentos/subir/",
         views.subir_documento,
         name="subir_documento"

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}
+Documentos
+{% endblock %}
+
+{% block content %}
+
+<h1>Documentos del sistema</h1>
+
+<table class="table table-striped table-bordered">
+
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Material</th>
+            <th>Tipo</th>
+            <th>Usuario</th>
+            <th>Fecha subida</th>
+            <th>Archivo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for documento in documentos %}
+
+            <tr>
+                <td>{{ documento.nombre }}</td>
+
+                <td>
+                    <a href="{% url 'inventario:detalle_material' documento.material.id %}">
+                        {{ documento.material.nombre }}
+                    </a>
+                </td>
+
+                <td>{{ documento.get_tipo_documento_display }}</td>
+
+                <td>
+                    {% if documento.usuario %}
+                        {{ documento.usuario.username }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>{{ documento.fecha_subida }}</td>
+
+                <td>
+                    <a href="{{ documento.archivo.url }}"
+                       target="_blank"
+                       class="btn btn-sm btn-outline-primary">
+                        Ver / Descargar
+                    </a>
+                </td>
+
+                <td>
+                    <a href="{% url 'documentos:eliminar_documento' documento.id %}"
+                       class="btn btn-sm btn-outline-danger">
+                        Eliminar
+                    </a>
+                </td>
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="7" class="text-center">
+                    No hay documentos registrados.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

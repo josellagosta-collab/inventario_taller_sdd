@@ -41,3 +41,10 @@ def eliminar_documento(request, documento_id):
         "documento": documento,
         "material": material,
     })
+    
+def lista_documentos(request):
+    documentos = Documento.objects.select_related("material", "usuario").all()
+
+    return render(request, "documentos/lista_documentos.html", {
+        "documentos": documentos,
+    })
