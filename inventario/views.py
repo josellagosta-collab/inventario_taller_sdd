@@ -356,3 +356,60 @@ def exportar_materiales_pdf(request):
     response["Content-Disposition"] = 'attachment; filename="inventario_monlau.pdf"'
 
     return response
+
+@login_required
+def exportar_movimientos_excel(request):
+    workbook = openpyxl.Workbook()
+    hoja = workbook.active
+    hoja.title = "Movimientos"
+
+    encabezados = [
+        "ID",
+        "Material",
+        "Código material",
+        "Tipo",
+        "Usuario",
+        "Descripción",
+        "Fecha",
+    ]
+
+    for columna, texto in enumerate(encabezados, start=1):
+        hoja.cell(row=1, column=columna, value=texto)
+
+    movimientos = MovimientoInventario.objects.select_related(
+        "material",
+        "usuario"
+    ).all()
+
+    fila = 2
+
+    for movimiento in movimientos:
+        hoja.cell(fila, 1, movimiento.id)
+        hoja.cell(fila, 2, movimiento.material.nombre)
+        hoja.cell(fila, 3, movimiento.material.codigo_inventario)
+        hoja.cell(fila, 4, movimiento.get_tipo_display())
+
+        if movimiento.usuario:
+            hoja.cell(fila, 5, movimiento.usuario.username)
+        else:
+            hoja.cell(fila, 5, "")
+
+        hoja.cell(fila, 6, movimiento.descripcion or "")
+
+        hoja.cell(
+            fila,
+            7,
+            movimiento.fecha.strftime("%d/%m/%Y %H:%M")
+        )
+
+        fila += 1
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="movimientos.xlsx"'
+
+    workbook.save(response)
+
+    return response
