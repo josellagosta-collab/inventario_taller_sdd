@@ -10,6 +10,12 @@ import openpyxl
 from django.db.models import Q
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
+from io import BytesIO
+from django.conf import settings
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 @login_required
 def crear_incidencia(request, material_id):
@@ -263,5 +269,73 @@ def exportar_incidencias_excel(request):
     hoja.freeze_panes = "A2"
 
     workbook.save(response)
+
+    return response
+
+@login_required
+def exportar_incidencias_pdf(request):
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer)
+
+    elementos = []
+    estilos = getSampleStyleSheet()
+
+    logo_path = settings.BASE_DIR / "static" / "images" / "logo_monlau.png"
+
+    if logo_path.exists():
+        elementos.append(Image(str(logo_path), width=90, height=55))
+
+    elementos.append(Paragraph("<b>Informe de incidencias</b>", estilos["Title"]))
+    elementos.append(Spacer(1, 12))
+
+    datos = [
+        ["ID", "Título", "Material", "Prioridad", "Estado"]
+    ]
+
+    incidencias = Incidencia.objects.select_related("material").all()
+
+    busqueda = request.GET.get("busqueda", "")
+    prioridad = request.GET.get("prioridad", "")
+    estado = request.GET.get("estado", "")
+
+    if busqueda:
+        incidencias = incidencias.filter(
+            Q(titulo__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+            )
+
+    if prioridad:
+            incidencias = incidencias.filter(prioridad=prioridad)
+
+    if estado:
+        incidencias = incidencias.filter(estado=estado)
+
+    for incidencia in incidencias:
+        datos.append([
+            incidencia.id,
+            incidencia.titulo,
+            incidencia.material.nombre,
+            incidencia.get_prioridad_display(),
+            incidencia.get_estado_display(),
+        ])
+
+    tabla = Table(datos, repeatRows=1)
+
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0051A0")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+    ]))
+
+    elementos.append(tabla)
+    pdf.build(elementos)
+
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="incidencias.pdf"'
 
     return response

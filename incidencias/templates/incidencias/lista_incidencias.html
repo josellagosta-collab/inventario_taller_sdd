@@ -79,6 +79,11 @@ Incidencias
         Exportar Excel
     </a>
 
+   <a href="{% url 'incidencias:exportar_incidencias_pdf' %}?busqueda={{ busqueda }}&prioridad={{ prioridad }}&estado={{ estado }}"
+    class="btn btn-danger">
+        Exportar PDF
+    </a>
+
 </div>
 
 <table class="table table-striped table-bordered">

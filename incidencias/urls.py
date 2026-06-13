@@ -31,5 +31,10 @@ urlpatterns = [
     views.exportar_incidencias_excel,
     name="exportar_incidencias_excel"
     ),
+    path(
+        "incidencias/exportar/pdf/",
+        views.exportar_incidencias_pdf,
+        name="exportar_incidencias_pdf"
+    ),
     
 ]
