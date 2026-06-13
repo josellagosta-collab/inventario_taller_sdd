@@ -505,3 +505,70 @@ def exportar_movimientos_excel(request):
     workbook.save(response)
 
     return response
+
+@login_required
+def exportar_movimientos_pdf(request):
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer)
+
+    elementos = []
+    estilos = getSampleStyleSheet()
+
+    logo_path = settings.BASE_DIR / "static" / "images" / "logo_monlau.png"
+
+    if logo_path.exists():
+        elementos.append(Image(str(logo_path), width=90, height=55))
+
+    elementos.append(Paragraph("<b>Informe de movimientos</b>", estilos["Title"]))
+    elementos.append(Spacer(1, 12))
+
+    datos = [
+        ["Fecha", "Material", "Tipo", "Usuario", "Descripción"]
+    ]
+
+    movimientos = MovimientoInventario.objects.select_related(
+        "material",
+        "usuario"
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    tipo = request.GET.get("tipo", "")
+
+    if busqueda:
+        movimientos = movimientos.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda)
+        )
+
+    if tipo:
+        movimientos = movimientos.filter(tipo=tipo)
+
+    for movimiento in movimientos:
+        datos.append([
+            movimiento.fecha.strftime("%d/%m/%Y %H:%M"),
+            movimiento.material.nombre,
+            movimiento.get_tipo_display(),
+            movimiento.usuario.username if movimiento.usuario else "",
+            movimiento.descripcion or "",
+        ])
+
+    tabla = Table(datos, repeatRows=1)
+
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0051A0")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+    ]))
+
+    elementos.append(tabla)
+    pdf.build(elementos)
+
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="movimientos.pdf"'
+
+    return response

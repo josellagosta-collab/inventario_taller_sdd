@@ -9,4 +9,5 @@ urlpatterns = [
     path("prestamos/<int:prestamo_id>/devolver/", views.devolver_prestamo, name="devolver_prestamo"),
     path("prestamos/<int:prestamo_id>/", views.detalle_prestamo, name="detalle_prestamo"),
     path("prestamos/exportar/excel/", views.exportar_prestamos_excel, name="exportar_prestamos_excel"),
+    path("prestamos/exportar/pdf/", views.exportar_prestamos_pdf, name="exportar_prestamos_pdf"),
 ]

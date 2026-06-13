@@ -10,6 +10,12 @@ from django.http import HttpResponse
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
+from io import BytesIO
+from django.conf import settings
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 @login_required
 def crear_prestamo(request):
@@ -267,5 +273,80 @@ def exportar_prestamos_excel(request):
     hoja.freeze_panes = "A2"
 
     workbook.save(response)
+
+    return response
+
+@login_required
+def exportar_prestamos_pdf(request):
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer)
+
+    elementos = []
+    estilos = getSampleStyleSheet()
+
+    logo_path = settings.BASE_DIR / "static" / "images" / "logo_monlau.png"
+
+    if logo_path.exists():
+        elementos.append(Image(str(logo_path), width=90, height=55))
+
+    elementos.append(Paragraph("<b>Informe de préstamos</b>", estilos["Title"]))
+    elementos.append(Spacer(1, 12))
+
+    datos = [
+        ["ID", "Usuario", "Profesor", "Material", "Fecha", "Prevista", "Estado"]
+    ]
+
+    prestamos = Prestamo.objects.select_related(
+        "usuario_receptor",
+        "profesor_responsable"
+    ).prefetch_related("lineas__material")
+
+    estado = request.GET.get("estado", "")
+    usuario_receptor = request.GET.get("usuario_receptor", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        prestamos = prestamos.filter(estado=estado)
+
+    if usuario_receptor:
+        prestamos = prestamos.filter(usuario_receptor_id=usuario_receptor)
+
+    if profesor_responsable:
+        prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
+
+    for prestamo in prestamos:
+        materiales = ", ".join(
+            [
+                f"{linea.material.nombre} x {linea.cantidad}"
+                for linea in prestamo.lineas.all()
+            ]
+        )
+
+        datos.append([
+            prestamo.id,
+            prestamo.usuario_receptor.username,
+            prestamo.profesor_responsable.username,
+            materiales,
+            prestamo.fecha_prestamo.strftime("%d/%m/%Y"),
+            prestamo.fecha_prevista_devolucion.strftime("%d/%m/%Y"),
+            prestamo.get_estado_display(),
+        ])
+
+    tabla = Table(datos, repeatRows=1)
+
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0051A0")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+    ]))
+
+    elementos.append(tabla)
+    pdf.build(elementos)
+
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="prestamos.pdf"'
 
     return response
