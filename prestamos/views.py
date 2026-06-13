@@ -1,9 +1,6 @@
-from .forms import (
-    PrestamoForm,
-    LineaPrestamoForm,
-    ReservaForm,
-) 
+from .forms import PrestamoForm, LineaPrestamoForm, ReservaForm, ReservaMaterialForm
 from .models import Prestamo, LineaPrestamo, Reserva
+from inventario.models import Material
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -705,3 +702,35 @@ def actualizar_reservas_caducadas(request):
         )
 
     return redirect("prestamos:lista_reservas")
+
+@login_required
+def crear_reserva_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.method == "POST":
+        form = ReservaMaterialForm(request.POST)
+
+        if form.is_valid():
+            reserva = form.save(commit=False)
+            reserva.material = material
+            reserva.save()
+
+            material.estado = "reservado"
+            material.save()
+
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="edicion",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion=f"Reserva creada desde material. Reserva ID: {reserva.id}"
+            )
+
+            return redirect("prestamos:detalle_reserva", reserva_id=reserva.id)
+
+    else:
+        form = ReservaMaterialForm()
+
+    return render(request, "prestamos/crear_reserva_material.html", {
+        "form": form,
+        "material": material,
+    })

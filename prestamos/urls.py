@@ -18,4 +18,5 @@ urlpatterns = [
     path("reservas/exportar/pdf/", views.exportar_reservas_pdf, name="exportar_reservas_pdf"),
     path("reservas/<int:reserva_id>/", views.detalle_reserva, name="detalle_reserva"),
     path("reservas/actualizar-caducadas/", views.actualizar_reservas_caducadas, name="actualizar_reservas_caducadas"),
+    path("materiales/<int:material_id>/reservar/", views.crear_reserva_material, name="crear_reserva_material"),
 ]
