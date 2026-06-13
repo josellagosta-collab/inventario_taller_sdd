@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detalle incidencia
+{% endblock %}
+
+{% block content %}
+
+<h1>Detalle de incidencia</h1>
+
+<div class="card shadow mb-4">
+
+    <div class="card-header bg-danger text-white">
+        {{ incidencia.titulo }}
+    </div>
+
+    <div class="card-body">
+
+        <p>
+            <strong>Material:</strong>
+            <a href="{% url 'inventario:detalle_material' incidencia.material.id %}">
+                {{ incidencia.material.nombre }}
+            </a>
+        </p>
+
+        <p>
+            <strong>Usuario:</strong>
+            {% if incidencia.usuario %}
+                {{ incidencia.usuario.username }}
+            {% else %}
+                -
+            {% endif %}
+        </p>
+
+        <p>
+            <strong>Prioridad:</strong>
+            {{ incidencia.get_prioridad_display }}
+        </p>
+
+        <p>
+            <strong>Estado:</strong>
+            {{ incidencia.get_estado_display }}
+        </p>
+
+        <p>
+            <strong>Fecha creación:</strong>
+            {{ incidencia.fecha_creacion }}
+        </p>
+
+        <p>
+            <strong>Fecha cierre:</strong>
+            {{ incidencia.fecha_cierre|default:"-" }}
+        </p>
+
+        <hr>
+
+        <h5>Descripción</h5>
+
+        <p>
+            {{ incidencia.descripcion }}
+        </p>
+
+        <h5>Solución</h5>
+
+        <p>
+            {{ incidencia.solucion|default:"Sin solución registrada" }}
+        </p>
+
+    </div>
+
+</div>
+
+<h2>Comentarios</h2>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Comentario</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for comentario in incidencia.comentarios.all %}
+
+            <tr>
+                <td>{{ comentario.fecha }}</td>
+                <td>
+                    {% if comentario.usuario %}
+                        {{ comentario.usuario.username }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ comentario.comentario }}</td>
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="3" class="text-center">
+                    No hay comentarios en esta incidencia.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+<a href="{% url 'incidencias:lista_incidencias' %}"
+   class="btn btn-secondary">
+    Volver al listado
+</a>
+
+{% endblock %}

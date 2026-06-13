@@ -207,7 +207,11 @@
 
                 <tr>
                     <td>{{ incidencia.fecha_creacion }}</td>
-                    <td>{{ incidencia.titulo }}</td>
+                    <td>
+                    <a href="{% url 'incidencias:detalle_incidencia' incidencia.id %}">
+                        {{ incidencia.titulo }}
+                    </a>
+                </td>
                     <td>{{ incidencia.get_prioridad_display }}</td>
                     <td>{{ incidencia.get_estado_display }}</td>
                     <td>

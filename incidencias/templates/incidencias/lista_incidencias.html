@@ -28,8 +28,11 @@ Incidencias
             <tr>
                 <td>{{ incidencia.fecha_creacion }}</td>
 
-                <td>{{ incidencia.titulo }}</td>
-
+                <td>
+                    <a href="{% url 'incidencias:detalle_incidencia' incidencia.id %}">
+                        {{ incidencia.titulo }}
+                    </a>
+                </td>
                 <td>
                     <a href="{% url 'inventario:detalle_material' incidencia.material.id %}">
                         {{ incidencia.material.nombre }}

@@ -51,3 +51,19 @@ def lista_incidencias(request):
     return render(request, "incidencias/lista_incidencias.html", {
         "incidencias": incidencias,
     })
+    
+@login_required
+def detalle_incidencia(request, incidencia_id):
+    incidencia = get_object_or_404(
+        Incidencia.objects.select_related(
+            "material",
+            "usuario"
+        ).prefetch_related(
+            "comentarios__usuario"
+        ),
+        id=incidencia_id
+    )
+
+    return render(request, "incidencias/detalle_incidencia.html", {
+        "incidencia": incidencia,
+    })

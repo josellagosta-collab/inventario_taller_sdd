@@ -15,4 +15,10 @@ urlpatterns = [
     views.lista_incidencias,
     name="lista_incidencias"
     ),  
+    path(
+    "incidencias/<int:incidencia_id>/",
+    views.detalle_incidencia,
+    name="detalle_incidencia"
+    ),
+    
 ]
