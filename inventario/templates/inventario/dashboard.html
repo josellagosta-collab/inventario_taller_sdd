@@ -118,4 +118,96 @@ Dashboard
     </div>
 </div>
 
+<hr>
+
+<h2>Actividad reciente</h2>
+
+<div class="row">
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Últimos materiales
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for material in ultimos_materiales %}
+                        <li>
+                            <a href="{% url 'inventario:detalle_material' material.id %}">
+                                {{ material.nombre }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li>No hay materiales.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Últimos préstamos
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for prestamo in ultimos_prestamos %}
+                        <li>
+                            <a href="{% url 'prestamos:detalle_prestamo' prestamo.id %}">
+                                Préstamo #{{ prestamo.id }} - {{ prestamo.usuario_receptor.username }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li>No hay préstamos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Últimas incidencias
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for incidencia in ultimas_incidencias %}
+                        <li>
+                            <a href="{% url 'incidencias:detalle_incidencia' incidencia.id %}">
+                                {{ incidencia.titulo }} - {{ incidencia.material.nombre }}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li>No hay incidencias.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Últimos movimientos
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for movimiento in ultimos_movimientos %}
+                        <li>
+                            {{ movimiento.fecha }} -
+                            {{ movimiento.get_tipo_display }} -
+                            {{ movimiento.material.nombre }}
+                        </li>
+                    {% empty %}
+                        <li>No hay movimientos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

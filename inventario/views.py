@@ -26,6 +26,7 @@ from django.conf import settings
 from pathlib import Path
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
+from incidencias.models import Incidencia
 
 
 @login_required
@@ -195,6 +196,21 @@ def dashboard(request):
     ).count()
 
     total_movimientos = MovimientoInventario.objects.count()
+    
+    ultimos_materiales = Material.objects.order_by("-fecha_creacion")[:5]
+
+    ultimos_prestamos = Prestamo.objects.select_related(
+        "usuario_receptor"
+    ).order_by("-fecha_prestamo")[:5]
+
+    ultimas_incidencias = Incidencia.objects.select_related(
+        "material"
+    ).order_by("-fecha_creacion")[:5]
+
+    ultimos_movimientos = MovimientoInventario.objects.select_related(
+        "material",
+        "usuario"
+    ).order_by("-fecha")[:5]
 
     return render(request, "inventario/dashboard.html", {
         "total_materiales": total_materiales,
@@ -205,6 +221,10 @@ def dashboard(request):
         "prestamos_activos": prestamos_activos,
         "prestamos_retrasados": prestamos_retrasados,
         "total_movimientos": total_movimientos,
+        "ultimos_materiales": ultimos_materiales,
+        "ultimos_prestamos": ultimos_prestamos,
+        "ultimas_incidencias": ultimas_incidencias,
+        "ultimos_movimientos": ultimos_movimientos,
     })
 
 
