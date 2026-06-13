@@ -88,6 +88,46 @@ Dashboard
 
 </div>
 
+<div class="row mb-4">
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Incidencias abiertas</h5>
+                <p class="card-text fs-3">{{ incidencias_abiertas }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">En reparación</h5>
+                <p class="card-text fs-3">{{ incidencias_reparacion }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Cerradas</h5>
+                <p class="card-text fs-3">{{ incidencias_cerradas }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-dark">
+            <div class="card-body">
+                <h5 class="card-title">Críticas activas</h5>
+                <p class="card-text fs-3">{{ incidencias_criticas }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <div class="card shadow">
     <div class="card-header" style="background-color: #0051A0; color: white;">
         Accesos rápidos
@@ -209,5 +249,7 @@ Dashboard
     </div>
 
 </div>
+
+
 
 {% endblock %}

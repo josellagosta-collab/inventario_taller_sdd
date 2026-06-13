@@ -211,6 +211,13 @@ def dashboard(request):
         "material",
         "usuario"
     ).order_by("-fecha")[:5]
+    
+    incidencias_abiertas = Incidencia.objects.filter(estado="abierta").count()
+    incidencias_reparacion = Incidencia.objects.filter(estado="en_reparacion").count()
+    incidencias_cerradas = Incidencia.objects.filter(estado="cerrada").count()
+    incidencias_criticas = Incidencia.objects.filter(prioridad="critica").exclude(
+        estado="cerrada"
+    ).count()
 
     return render(request, "inventario/dashboard.html", {
         "total_materiales": total_materiales,
@@ -225,6 +232,10 @@ def dashboard(request):
         "ultimos_prestamos": ultimos_prestamos,
         "ultimas_incidencias": ultimas_incidencias,
         "ultimos_movimientos": ultimos_movimientos,
+        "incidencias_abiertas": incidencias_abiertas,
+        "incidencias_reparacion": incidencias_reparacion,
+        "incidencias_cerradas": incidencias_cerradas,
+        "incidencias_criticas": incidencias_criticas,
     })
 
 
