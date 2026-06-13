@@ -11,6 +11,19 @@ from django.contrib.auth.decorators import login_required
 from usuarios.decorators import pertenece_a_grupo
 from django.http import HttpResponse
 import openpyxl
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    Image,
+)
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from django.conf import settings
+from pathlib import Path
 
 @login_required
 def lista_materiales(request):
@@ -238,5 +251,108 @@ def exportar_materiales_excel(request):
     ] = 'attachment; filename="inventario.xlsx"'
 
     workbook.save(response)
+
+    return response
+
+@login_required
+def exportar_materiales_pdf(request):
+
+    buffer = BytesIO()
+
+    pdf = SimpleDocTemplate(buffer)
+
+    elementos = []
+
+    estilos = getSampleStyleSheet()
+
+    logo_path = settings.BASE_DIR / "static" / "images" / "logo_monlau.png"
+
+    if logo_path.exists():
+        logo = Image(str(logo_path), width=90, height=55)
+        elementos.append(logo)
+
+    titulo = Paragraph(
+        "<b>Inventario de Taller</b>",
+        estilos["Title"]
+    )
+
+    elementos.append(titulo)
+    elementos.append(Spacer(1, 12))
+
+    fecha = timezone.now().strftime("%d/%m/%Y %H:%M")
+
+    elementos.append(
+        Paragraph(
+            f"Fecha de generación: {fecha}",
+            estilos["Normal"]
+        )
+    )
+
+    elementos.append(Spacer(1, 12))
+
+    total_materiales = Material.objects.count()
+    disponibles = Material.objects.filter(estado="disponible").count()
+    prestados = Material.objects.filter(estado="prestado").count()
+    averiados = Material.objects.filter(estado="averiado").count()
+
+    resumen = Paragraph(
+        f"""
+        <b>Total materiales:</b> {total_materiales}<br/>
+        <b>Disponibles:</b> {disponibles}<br/>
+        <b>Prestados:</b> {prestados}<br/>
+        <b>Averiados:</b> {averiados}
+        """,
+        estilos["Normal"]
+    )
+
+    elementos.append(resumen)
+    elementos.append(Spacer(1, 18))
+
+    datos = [
+        [
+            "Código",
+            "Nombre",
+            "Categoría",
+            "Cantidad",
+            "Estado",
+        ]
+    ]
+
+    materiales = Material.objects.select_related("categoria").all()
+
+    for material in materiales:
+        datos.append([
+            material.codigo_inventario,
+            material.nombre,
+            material.categoria.nombre if material.categoria else "",
+            material.cantidad,
+            material.get_estado_display(),
+        ])
+
+    tabla = Table(datos, repeatRows=1)
+
+    tabla.setStyle(
+        TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0051A0")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        ])
+    )
+
+    elementos.append(tabla)
+
+    pdf.build(elementos)
+
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer,
+        content_type="application/pdf"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="inventario_monlau.pdf"'
 
     return response
