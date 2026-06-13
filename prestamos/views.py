@@ -186,6 +186,19 @@ def exportar_prestamos_excel(request):
         "usuario_receptor",
         "profesor_responsable"
     ).prefetch_related("lineas__material")
+    
+    estado = request.GET.get("estado", "")
+    usuario_receptor = request.GET.get("usuario_receptor", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        prestamos = prestamos.filter(estado=estado)
+
+    if usuario_receptor:
+        prestamos = prestamos.filter(usuario_receptor_id=usuario_receptor)
+
+    if profesor_responsable:
+        prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
 
     fila = 2
 
@@ -201,9 +214,22 @@ def exportar_prestamos_excel(request):
         hoja.cell(fila, 2, prestamo.usuario_receptor.username)
         hoja.cell(fila, 3, prestamo.profesor_responsable.username)
         hoja.cell(fila, 4, materiales)
-        hoja.cell(fila, 5, prestamo.fecha_prestamo)
-        hoja.cell(fila, 6, prestamo.fecha_prevista_devolucion)
-        hoja.cell(fila, 7, prestamo.fecha_devolucion_real)
+        hoja.cell(fila, 5, prestamo.fecha_prestamo.strftime("%d/%m/%Y"))
+
+        hoja.cell(
+            fila,
+            6,
+            prestamo.fecha_prevista_devolucion.strftime("%d/%m/%Y")
+        )
+
+        if prestamo.fecha_devolucion_real:
+            hoja.cell(
+                fila,
+                7,
+                prestamo.fecha_devolucion_real.strftime("%d/%m/%Y")
+            )
+        else:
+            hoja.cell(fila, 7, "")
         hoja.cell(fila, 8, prestamo.get_estado_display())
 
         fila += 1
