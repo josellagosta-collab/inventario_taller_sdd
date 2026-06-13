@@ -5,6 +5,8 @@ from inventario.models import Material, MovimientoInventario
 from .forms import IncidenciaForm
 from django.utils import timezone
 from .forms import ResolverIncidenciaForm
+from django.http import HttpResponse
+import openpyxl
 
 
 @login_required
@@ -42,7 +44,8 @@ def crear_incidencia(request, material_id):
         "form": form,
         "material": material,
     })
-    
+
+
 @login_required
 def lista_incidencias(request):
     incidencias = Incidencia.objects.select_related(
@@ -53,7 +56,8 @@ def lista_incidencias(request):
     return render(request, "incidencias/lista_incidencias.html", {
         "incidencias": incidencias,
     })
-    
+
+
 @login_required
 def detalle_incidencia(request, incidencia_id):
     incidencia = get_object_or_404(
@@ -69,7 +73,8 @@ def detalle_incidencia(request, incidencia_id):
     return render(request, "incidencias/detalle_incidencia.html", {
         "incidencia": incidencia,
     })
-    
+
+
 @login_required
 def resolver_incidencia(request, incidencia_id):
 
@@ -122,3 +127,75 @@ def resolver_incidencia(request, incidencia_id):
             "form": form,
         }
     )
+
+
+@login_required
+def exportar_incidencias_excel(request):
+    workbook = openpyxl.Workbook()
+    hoja = workbook.active
+    hoja.title = "Incidencias"
+
+    encabezados = [
+        "ID",
+        "Título",
+        "Material",
+        "Código material",
+        "Prioridad",
+        "Estado",
+        "Usuario",
+        "Fecha creación",
+        "Fecha cierre",
+        "Solución",
+    ]
+
+    for columna, texto in enumerate(encabezados, start=1):
+        hoja.cell(row=1, column=columna, value=texto)
+
+    incidencias = Incidencia.objects.select_related(
+        "material",
+        "usuario"
+    ).all()
+
+    fila = 2
+
+    for incidencia in incidencias:
+        hoja.cell(fila, 1, incidencia.id)
+        hoja.cell(fila, 2, incidencia.titulo)
+        hoja.cell(fila, 3, incidencia.material.nombre)
+        hoja.cell(fila, 4, incidencia.material.codigo_inventario)
+        hoja.cell(fila, 5, incidencia.get_prioridad_display())
+        hoja.cell(fila, 6, incidencia.get_estado_display())
+
+        if incidencia.usuario:
+            hoja.cell(fila, 7, incidencia.usuario.username)
+        else:
+            hoja.cell(fila, 7, "")
+
+        hoja.cell(
+            fila,
+            8,
+            incidencia.fecha_creacion.strftime("%d/%m/%Y %H:%M")
+        )
+
+        if incidencia.fecha_cierre:
+            hoja.cell(
+                fila,
+                9,
+                incidencia.fecha_cierre.strftime("%d/%m/%Y %H:%M")
+            )
+        else:
+            hoja.cell(fila, 9, "")
+
+        hoja.cell(fila, 10, incidencia.solucion or "")
+
+        fila += 1
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="incidencias.xlsx"'
+
+    workbook.save(response)
+
+    return response

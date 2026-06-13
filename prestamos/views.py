@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from inventario.models import MovimientoInventario
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+import openpyxl
 
 @login_required
 def crear_prestamo(request):
@@ -159,3 +161,59 @@ def detalle_prestamo(request, prestamo_id):
     return render(request, "prestamos/detalle_prestamo.html", {
         "prestamo": prestamo,
     })
+    
+@login_required
+def exportar_prestamos_excel(request):
+    workbook = openpyxl.Workbook()
+    hoja = workbook.active
+    hoja.title = "Prestamos"
+
+    encabezados = [
+        "ID",
+        "Usuario receptor",
+        "Profesor responsable",
+        "Materiales",
+        "Fecha préstamo",
+        "Fecha prevista devolución",
+        "Fecha devolución real",
+        "Estado",
+    ]
+
+    for columna, texto in enumerate(encabezados, start=1):
+        hoja.cell(row=1, column=columna, value=texto)
+
+    prestamos = Prestamo.objects.select_related(
+        "usuario_receptor",
+        "profesor_responsable"
+    ).prefetch_related("lineas__material")
+
+    fila = 2
+
+    for prestamo in prestamos:
+        materiales = ", ".join(
+            [
+                f"{linea.material.nombre} x {linea.cantidad}"
+                for linea in prestamo.lineas.all()
+            ]
+        )
+
+        hoja.cell(fila, 1, prestamo.id)
+        hoja.cell(fila, 2, prestamo.usuario_receptor.username)
+        hoja.cell(fila, 3, prestamo.profesor_responsable.username)
+        hoja.cell(fila, 4, materiales)
+        hoja.cell(fila, 5, prestamo.fecha_prestamo)
+        hoja.cell(fila, 6, prestamo.fecha_prevista_devolucion)
+        hoja.cell(fila, 7, prestamo.fecha_devolucion_real)
+        hoja.cell(fila, 8, prestamo.get_estado_display())
+
+        fila += 1
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="prestamos.xlsx"'
+
+    workbook.save(response)
+
+    return response

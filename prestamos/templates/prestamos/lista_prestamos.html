@@ -56,10 +56,19 @@ Préstamos
 
 </div>
 
-<a href="{% url 'prestamos:crear_prestamo' %}"
-   class="btn btn-success mb-3">
-    Nuevo préstamo
-</a>
+<div class="d-flex gap-2 mb-3">
+
+    <a href="{% url 'prestamos:crear_prestamo' %}"
+       class="btn btn-success">
+        Nuevo préstamo
+    </a>
+
+    <a href="{% url 'prestamos:exportar_prestamos_excel' %}"
+       class="btn btn-success">
+        Exportar Excel
+    </a>
+
+</div>
 
 <form method="get" class="card card-body mb-4">
 
