@@ -8,6 +8,8 @@ from .forms import ResolverIncidenciaForm
 from django.http import HttpResponse
 import openpyxl
 from django.db.models import Q
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
 
 @login_required
 def crear_incidencia(request, material_id):
@@ -172,6 +174,17 @@ def exportar_incidencias_excel(request):
 
     for columna, texto in enumerate(encabezados, start=1):
         hoja.cell(row=1, column=columna, value=texto)
+        
+    color_corporativo = "0051A0"
+
+    for celda in hoja[1]:
+        celda.font = Font(bold=True, color="FFFFFF")
+        celda.fill = PatternFill(
+            start_color=color_corporativo,
+            end_color=color_corporativo,
+            fill_type="solid"
+        )
+        celda.alignment = Alignment(horizontal="center")
 
     incidencias = Incidencia.objects.select_related(
         "material",
@@ -235,6 +248,19 @@ def exportar_incidencias_excel(request):
     )
 
     response["Content-Disposition"] = 'attachment; filename="incidencias.xlsx"'
+    
+    for columna in hoja.columns:
+        max_length = 0
+        letra_columna = get_column_letter(columna[0].column)
+
+        for celda in columna:
+            if celda.value:
+                max_length = max(max_length, len(str(celda.value)))
+
+        hoja.column_dimensions[letra_columna].width = max_length + 2
+
+    hoja.auto_filter.ref = hoja.dimensions
+    hoja.freeze_panes = "A2"
 
     workbook.save(response)
 
