@@ -1,3 +1,42 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+from inventario.models import Material, MovimientoInventario
+from .forms import IncidenciaForm
+
+
+@login_required
+def crear_incidencia(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.method == "POST":
+        form = IncidenciaForm(request.POST)
+
+        if form.is_valid():
+            incidencia = form.save(commit=False)
+            incidencia.material = material
+
+            if request.user.is_authenticated:
+                incidencia.usuario = request.user
+
+            incidencia.save()
+
+            material.estado = "averiado"
+            material.save()
+
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="edicion",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion=f"Incidencia creada: {incidencia.titulo}"
+            )
+
+            return redirect("inventario:detalle_material", material_id=material.id)
+
+    else:
+        form = IncidenciaForm()
+
+    return render(request, "incidencias/crear_incidencia.html", {
+        "form": form,
+        "material": material,
+    })

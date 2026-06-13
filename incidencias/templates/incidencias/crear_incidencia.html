@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+Crear incidencia
+{% endblock %}
+
+{% block content %}
+
+<h1>Crear incidencia</h1>
+
+<div class="card shadow">
+
+    <div class="card-header bg-danger text-white">
+        Material: {{ material.nombre }}
+    </div>
+
+    <div class="card-body">
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {% for field in form %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <div class="text-danger mt-1">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <button type="submit" class="btn btn-danger">
+                Guardar incidencia
+            </button>
+
+            <a href="{% url 'inventario:detalle_material' material.id %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
