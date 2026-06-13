@@ -244,4 +244,76 @@
 
 {% endif %}
 
+<hr>
+
+<h2>Reservas</h2>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Fecha reserva</th>
+            <th>Fecha recogida</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for reserva in material.reservas.all %}
+
+            <tr>
+                <td>
+                    <a href="{% url 'prestamos:detalle_reserva' reserva.id %}">
+                        #{{ reserva.id }}
+                    </a>
+                </td>
+
+                <td>{{ reserva.usuario_reserva.username }}</td>
+
+                <td>{{ reserva.fecha_reserva }}</td>
+
+                <td>{{ reserva.fecha_prevista_recogida }}</td>
+
+                <td>
+                    {% if reserva.estado == "activa" %}
+                        <span class="badge bg-primary">
+                            Activa
+                        </span>
+                    {% elif reserva.estado == "convertida" %}
+                        <span class="badge bg-success">
+                            Convertida
+                        </span>
+                    {% elif reserva.estado == "cancelada" %}
+                        <span class="badge bg-warning text-dark">
+                            Cancelada
+                        </span>
+                    {% elif reserva.estado == "caducada" %}
+                        <span class="badge bg-danger">
+                            Caducada
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            {{ reserva.get_estado_display }}
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="5" class="text-center">
+                    Este material no tiene reservas registradas.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
 {% endblock %}
