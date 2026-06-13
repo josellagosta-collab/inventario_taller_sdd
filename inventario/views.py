@@ -28,6 +28,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from incidencias.models import Incidencia
 from django.db.models import F
+from prestamos.models import Prestamo, Reserva
 
 
 @login_required
@@ -244,6 +245,14 @@ def dashboard(request):
     ).exclude(
         estado="cerrada"
     ).count()
+    
+    reservas_activas = Reserva.objects.filter(estado="activa").count()
+
+    reservas_convertidas = Reserva.objects.filter(estado="convertida").count()
+
+    reservas_canceladas = Reserva.objects.filter(estado="cancelada").count()
+
+    reservas_caducadas = Reserva.objects.filter(estado="caducada").count()
 
     return render(request, "inventario/dashboard.html", {
         "total_materiales": total_materiales,
@@ -263,6 +272,10 @@ def dashboard(request):
         "incidencias_reparacion": incidencias_reparacion,
         "incidencias_cerradas": incidencias_cerradas,
         "incidencias_criticas": incidencias_criticas,
+        "reservas_activas": reservas_activas,
+        "reservas_convertidas": reservas_convertidas,
+        "reservas_canceladas": reservas_canceladas,
+        "reservas_caducadas": reservas_caducadas,
     })
 
 

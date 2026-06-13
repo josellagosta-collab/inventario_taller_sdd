@@ -131,6 +131,46 @@ Dashboard
 <div class="row mb-4">
 
     <div class="col-md-3 mb-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Reservas activas</h5>
+                <p class="card-text fs-3">{{ reservas_activas }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Convertidas</h5>
+                <p class="card-text fs-3">{{ reservas_convertidas }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Canceladas</h5>
+                <p class="card-text fs-3">{{ reservas_canceladas }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Caducadas</h5>
+                <p class="card-text fs-3">{{ reservas_caducadas }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row mb-4">
+
+    <div class="col-md-3 mb-3">
         <a href="{% url 'inventario:materiales_stock_bajo' %}"
            class="text-decoration-none">
 

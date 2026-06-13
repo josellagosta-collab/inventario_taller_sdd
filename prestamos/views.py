@@ -16,7 +16,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from django.conf import settings
-
+from django.db.models import Q
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -391,8 +391,40 @@ def lista_reservas(request):
         "material"
     ).all()
 
+    usuarios = User.objects.all()
+
+    estado = request.GET.get("estado", "")
+    busqueda = request.GET.get("busqueda", "")
+    usuario_reserva = request.GET.get("usuario_reserva", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        reservas = reservas.filter(estado=estado)
+
+    if busqueda:
+        reservas = reservas.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if usuario_reserva:
+        reservas = reservas.filter(usuario_reserva_id=usuario_reserva)
+
+    if profesor_responsable:
+        reservas = reservas.filter(profesor_responsable_id=profesor_responsable)
+      
+    paginator = Paginator(reservas, 10)
+    numero_pagina = request.GET.get("page")
+    pagina_reservas = paginator.get_page(numero_pagina)  
+
     return render(request, "prestamos/lista_reservas.html", {
-        "reservas": reservas,
+        "reservas": pagina_reservas,
+        "usuarios": usuarios,
+        "estados": Reserva.ESTADOS,
+        "estado": estado,
+        "busqueda": busqueda,
+        "usuario_reserva": usuario_reserva,
+        "profesor_responsable": profesor_responsable,
     })
     
 @login_required
@@ -458,3 +490,177 @@ def convertir_reserva_en_prestamo(request, reserva_id):
     return render(request, "prestamos/convertir_reserva.html", {
         "reserva": reserva,
     })
+    
+@login_required
+def exportar_reservas_excel(request):
+    workbook = openpyxl.Workbook()
+    hoja = workbook.active
+    hoja.title = "Reservas"
+
+    encabezados = [
+        "ID",
+        "Usuario reserva",
+        "Profesor responsable",
+        "Material",
+        "Código material",
+        "Cantidad",
+        "Fecha reserva",
+        "Fecha prevista recogida",
+        "Estado",
+        "Observaciones",
+    ]
+
+    for columna, texto in enumerate(encabezados, start=1):
+        hoja.cell(row=1, column=columna, value=texto)
+        
+    color_corporativo = "0051A0"
+
+    for celda in hoja[1]:
+        celda.font = Font(bold=True, color="FFFFFF")
+        celda.fill = PatternFill(
+            start_color=color_corporativo,
+            end_color=color_corporativo,
+            fill_type="solid"
+        )
+        celda.alignment = Alignment(horizontal="center")
+
+    reservas = Reserva.objects.select_related(
+        "usuario_reserva",
+        "profesor_responsable",
+        "material"
+    ).all()
+    
+    estado = request.GET.get("estado", "")
+    busqueda = request.GET.get("busqueda", "")
+    usuario_reserva = request.GET.get("usuario_reserva", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        reservas = reservas.filter(estado=estado)
+
+    if busqueda:
+        reservas = reservas.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if usuario_reserva:
+        reservas = reservas.filter(usuario_reserva_id=usuario_reserva)
+
+    if profesor_responsable:
+        reservas = reservas.filter(profesor_responsable_id=profesor_responsable)
+
+    fila = 2
+
+    for reserva in reservas:
+        hoja.cell(fila, 1, reserva.id)
+        hoja.cell(fila, 2, reserva.usuario_reserva.username)
+        hoja.cell(fila, 3, reserva.profesor_responsable.username)
+        hoja.cell(fila, 4, reserva.material.nombre)
+        hoja.cell(fila, 5, reserva.material.codigo_inventario)
+        hoja.cell(fila, 6, reserva.cantidad)
+        hoja.cell(fila, 7, reserva.fecha_reserva.strftime("%d/%m/%Y"))
+        hoja.cell(fila, 8, reserva.fecha_prevista_recogida.strftime("%d/%m/%Y"))
+        hoja.cell(fila, 9, reserva.get_estado_display())
+        hoja.cell(fila, 10, reserva.observaciones or "")
+
+        fila += 1
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="reservas.xlsx"'
+    
+    for columna in hoja.columns:
+        max_length = 0
+        letra_columna = get_column_letter(columna[0].column)
+
+    for celda in columna:
+        if celda.value:
+            max_length = max(max_length, len(str(celda.value)))
+
+    hoja.column_dimensions[letra_columna].width = max_length + 2
+
+    hoja.auto_filter.ref = hoja.dimensions
+    hoja.freeze_panes = "A2"
+
+    workbook.save(response)
+
+    return response
+
+@login_required
+def exportar_reservas_pdf(request):
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(buffer)
+
+    elementos = []
+    estilos = getSampleStyleSheet()
+
+    logo_path = settings.BASE_DIR / "static" / "images" / "logo_monlau.png"
+
+    if logo_path.exists():
+        elementos.append(Image(str(logo_path), width=90, height=55))
+
+    elementos.append(Paragraph("<b>Informe de reservas</b>", estilos["Title"]))
+    elementos.append(Spacer(1, 12))
+
+    datos = [
+        ["ID", "Usuario", "Profesor", "Material", "Cantidad", "Recogida", "Estado"]
+    ]
+
+    reservas = Reserva.objects.select_related(
+        "usuario_reserva",
+        "profesor_responsable",
+        "material"
+    ).all()
+
+    estado = request.GET.get("estado", "")
+    busqueda = request.GET.get("busqueda", "")
+    usuario_reserva = request.GET.get("usuario_reserva", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        reservas = reservas.filter(estado=estado)
+
+    if busqueda:
+        reservas = reservas.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if usuario_reserva:
+        reservas = reservas.filter(usuario_reserva_id=usuario_reserva)
+
+    if profesor_responsable:
+        reservas = reservas.filter(profesor_responsable_id=profesor_responsable)
+
+    for reserva in reservas:
+        datos.append([
+            reserva.id,
+            reserva.usuario_reserva.username,
+            reserva.profesor_responsable.username,
+            reserva.material.nombre,
+            reserva.cantidad,
+            reserva.fecha_prevista_recogida.strftime("%d/%m/%Y"),
+            reserva.get_estado_display(),
+        ])
+
+    tabla = Table(datos, repeatRows=1)
+
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0051A0")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+    ]))
+
+    elementos.append(tabla)
+    pdf.build(elementos)
+
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="reservas.pdf"'
+
+    return response
