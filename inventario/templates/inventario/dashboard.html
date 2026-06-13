@@ -128,7 +128,25 @@ Dashboard
 
 </div>
 
-<div class="card shadow">
+<div class="row mb-4">
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'inventario:materiales_stock_bajo' %}"
+           class="text-decoration-none">
+
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Stock bajo</h5>
+                    <p class="card-text fs-3">{{ materiales_stock_bajo }}</p>
+                </div>
+            </div>
+
+        </a>
+    </div>
+
+</div>
+
+<div class="card shadow mb-4">
     <div class="card-header" style="background-color: #0051A0; color: white;">
         Accesos rápidos
     </div>
@@ -249,7 +267,5 @@ Dashboard
     </div>
 
 </div>
-
-
 
 {% endblock %}

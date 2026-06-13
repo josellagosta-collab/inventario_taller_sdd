@@ -15,4 +15,5 @@ urlpatterns = [
     path("materiales/exportar/pdf/", views.exportar_materiales_pdf, name="exportar_materiales_pdf"),
     path("movimientos/exportar/excel/", views.exportar_movimientos_excel, name="exportar_movimientos_excel"),
     path("movimientos/exportar/pdf/", views.exportar_movimientos_pdf, name="exportar_movimientos_pdf"),
+    path("materiales/stock-bajo/", views.materiales_stock_bajo, name="materiales_stock_bajo"),
 ]

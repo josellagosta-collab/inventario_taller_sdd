@@ -27,6 +27,7 @@ from pathlib import Path
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from incidencias.models import Incidencia
+from django.db.models import F
 
 
 @login_required
@@ -181,14 +182,28 @@ def dashboard(request):
     hoy = timezone.now().date()
 
     total_materiales = Material.objects.count()
+
     materiales_disponibles = Material.objects.filter(
-        estado="disponible").count()
-    materiales_prestados = Material.objects.filter(estado="prestado").count()
-    materiales_retirados = Material.objects.filter(estado="retirado").count()
+        estado="disponible"
+    ).count()
+
+    materiales_prestados = Material.objects.filter(
+        estado="prestado"
+    ).count()
+
+    materiales_retirados = Material.objects.filter(
+        estado="retirado"
+    ).count()
+
+    materiales_stock_bajo = Material.objects.filter(
+        cantidad__lte=F("stock_minimo")
+    ).count()
 
     total_documentos = Documento.objects.count()
 
-    prestamos_activos = Prestamo.objects.filter(estado="activo").count()
+    prestamos_activos = Prestamo.objects.filter(
+        estado="activo"
+    ).count()
 
     prestamos_retrasados = Prestamo.objects.filter(
         estado="activo",
@@ -196,7 +211,7 @@ def dashboard(request):
     ).count()
 
     total_movimientos = MovimientoInventario.objects.count()
-    
+
     ultimos_materiales = Material.objects.order_by("-fecha_creacion")[:5]
 
     ultimos_prestamos = Prestamo.objects.select_related(
@@ -211,11 +226,22 @@ def dashboard(request):
         "material",
         "usuario"
     ).order_by("-fecha")[:5]
-    
-    incidencias_abiertas = Incidencia.objects.filter(estado="abierta").count()
-    incidencias_reparacion = Incidencia.objects.filter(estado="en_reparacion").count()
-    incidencias_cerradas = Incidencia.objects.filter(estado="cerrada").count()
-    incidencias_criticas = Incidencia.objects.filter(prioridad="critica").exclude(
+
+    incidencias_abiertas = Incidencia.objects.filter(
+        estado="abierta"
+    ).count()
+
+    incidencias_reparacion = Incidencia.objects.filter(
+        estado="en_reparacion"
+    ).count()
+
+    incidencias_cerradas = Incidencia.objects.filter(
+        estado="cerrada"
+    ).count()
+
+    incidencias_criticas = Incidencia.objects.filter(
+        prioridad="critica"
+    ).exclude(
         estado="cerrada"
     ).count()
 
@@ -224,6 +250,7 @@ def dashboard(request):
         "materiales_disponibles": materiales_disponibles,
         "materiales_prestados": materiales_prestados,
         "materiales_retirados": materiales_retirados,
+        "materiales_stock_bajo": materiales_stock_bajo,
         "total_documentos": total_documentos,
         "prestamos_activos": prestamos_activos,
         "prestamos_retrasados": prestamos_retrasados,
@@ -603,3 +630,19 @@ def exportar_movimientos_pdf(request):
     response["Content-Disposition"] = 'attachment; filename="movimientos.pdf"'
 
     return response
+
+
+@login_required
+def materiales_stock_bajo(request):
+
+    materiales = Material.objects.filter(
+        cantidad__lte=F("stock_minimo")
+    )
+
+    return render(
+        request,
+        "inventario/materiales_stock_bajo.html",
+        {
+            "materiales": materiales,
+        }
+    )

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Materiales con stock bajo</h1>
+
+<table class="table table-striped">
+
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Cantidad</th>
+            <th>Stock mínimo</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for material in materiales %}
+
+        <tr>
+            <td>{{ material.codigo_inventario }}</td>
+            <td>{{ material.nombre }}</td>
+            <td>{{ material.cantidad }}</td>
+            <td>{{ material.stock_minimo }}</td>
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="4">
+                No hay materiales con stock bajo.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}
