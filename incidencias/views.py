@@ -7,7 +7,7 @@ from django.utils import timezone
 from .forms import ResolverIncidenciaForm
 from django.http import HttpResponse
 import openpyxl
-
+from django.db.models import Q
 
 @login_required
 def crear_incidencia(request, material_id):
@@ -53,25 +53,31 @@ def lista_incidencias(request):
         "usuario"
     ).all()
 
+    busqueda = request.GET.get("busqueda", "")
+    prioridad = request.GET.get("prioridad", "")
+    estado = request.GET.get("estado", "")
+
+    if busqueda:
+        incidencias = incidencias.filter(
+            Q(titulo__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if prioridad:
+        incidencias = incidencias.filter(prioridad=prioridad)
+
+    if estado:
+        incidencias = incidencias.filter(estado=estado)
+
     return render(request, "incidencias/lista_incidencias.html", {
         "incidencias": incidencias,
-    })
-
-
-@login_required
-def detalle_incidencia(request, incidencia_id):
-    incidencia = get_object_or_404(
-        Incidencia.objects.select_related(
-            "material",
-            "usuario"
-        ).prefetch_related(
-            "comentarios__usuario"
-        ),
-        id=incidencia_id
-    )
-
-    return render(request, "incidencias/detalle_incidencia.html", {
-        "incidencia": incidencia,
+        "busqueda": busqueda,
+        "prioridad": prioridad,
+        "estado": estado,
+        "prioridades": Incidencia.PRIORIDADES,
+        "estados": Incidencia.ESTADOS,
     })
 
 
@@ -130,6 +136,22 @@ def resolver_incidencia(request, incidencia_id):
 
 
 @login_required
+def detalle_incidencia(request, incidencia_id):
+    incidencia = get_object_or_404(
+        Incidencia.objects.select_related(
+            "material",
+            "usuario"
+        ).prefetch_related(
+            "comentarios__usuario"
+        ),
+        id=incidencia_id
+    )
+
+    return render(request, "incidencias/detalle_incidencia.html", {
+        "incidencia": incidencia,
+    })
+
+@login_required
 def exportar_incidencias_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -155,6 +177,24 @@ def exportar_incidencias_excel(request):
         "material",
         "usuario"
     ).all()
+    
+    busqueda = request.GET.get("busqueda", "")
+    prioridad = request.GET.get("prioridad", "")
+    estado = request.GET.get("estado", "")
+
+    if busqueda:
+        incidencias = incidencias.filter(
+            Q(titulo__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if prioridad:
+        incidencias = incidencias.filter(prioridad=prioridad)
+
+    if estado:
+        incidencias = incidencias.filter(estado=estado)
 
     fila = 2
 

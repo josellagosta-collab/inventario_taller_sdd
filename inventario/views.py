@@ -408,6 +408,20 @@ def exportar_movimientos_excel(request):
         "material",
         "usuario"
     ).all()
+    
+    busqueda = request.GET.get("busqueda", "")
+    tipo = request.GET.get("tipo", "")
+
+    if busqueda:
+        movimientos = movimientos.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda)
+        )
+
+    if tipo:
+        movimientos = movimientos.filter(tipo=tipo)
 
     fila = 2
 

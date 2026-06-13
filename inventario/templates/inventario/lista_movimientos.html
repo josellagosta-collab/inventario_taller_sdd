@@ -10,8 +10,8 @@ Movimientos de inventario
 
 <div class="d-flex gap-2 mb-3">
 
-    <a href="{% url 'inventario:exportar_movimientos_excel' %}"
-       class="btn btn-success">
+   <a href="{% url 'inventario:exportar_movimientos_excel' %}?busqueda={{ busqueda }}&tipo={{ tipo }}"
+    class="btn btn-success">
         Exportar Excel
     </a>
 
