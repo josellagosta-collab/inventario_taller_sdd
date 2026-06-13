@@ -25,9 +25,11 @@ from io import BytesIO
 from django.conf import settings
 from pathlib import Path
 
+
 @login_required
 def lista_materiales(request):
-    materiales = Material.objects.annotate(total_documentos=Count("documentos"))
+    materiales = Material.objects.annotate(
+        total_documentos=Count("documentos"))
     categorias = Categoria.objects.all()
 
     busqueda = request.GET.get("busqueda", "")
@@ -93,7 +95,8 @@ def crear_material(request):
     return render(request, "inventario/crear_material.html", {
         "form": form
     })
-    
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def editar_material(request, material_id):
@@ -113,7 +116,8 @@ def editar_material(request, material_id):
         "form": form,
         "material": material
     })
-    
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def retirar_material(request, material_id):
@@ -127,13 +131,14 @@ def retirar_material(request, material_id):
             tipo="retirada",
             usuario=request.user if request.user.is_authenticated else None,
             descripcion="Retirada lógica de material"
-    )
+        )
         return redirect("inventario:lista_materiales")
 
     return render(request, "inventario/retirar_material.html", {
         "material": material
     })
-    
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def lista_movimientos(request):
@@ -166,13 +171,15 @@ def lista_movimientos(request):
         "tipo": tipo,
         "tipos_movimiento": MovimientoInventario.TIPOS_MOVIMIENTO,
     })
-    
+
+
 @login_required
 def dashboard(request):
     hoy = timezone.now().date()
 
     total_materiales = Material.objects.count()
-    materiales_disponibles = Material.objects.filter(estado="disponible").count()
+    materiales_disponibles = Material.objects.filter(
+        estado="disponible").count()
     materiales_prestados = Material.objects.filter(estado="prestado").count()
     materiales_retirados = Material.objects.filter(estado="retirado").count()
 
@@ -197,14 +204,12 @@ def dashboard(request):
         "prestamos_retrasados": prestamos_retrasados,
         "total_movimientos": total_movimientos,
     })
-    
+
+
 @login_required
 def exportar_materiales_excel(request):
-
     workbook = openpyxl.Workbook()
-
     hoja = workbook.active
-
     hoja.title = "Materiales"
 
     encabezados = [
@@ -220,12 +225,35 @@ def exportar_materiales_excel(request):
     for columna, texto in enumerate(encabezados, start=1):
         hoja.cell(row=1, column=columna, value=texto)
 
-    materiales = Material.objects.all()
+    materiales = Material.objects.select_related(
+        "categoria",
+        "subcategoria",
+        "proveedor",
+        "ubicacion"
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    categoria_id = request.GET.get("categoria", "")
+    estado = request.GET.get("estado", "")
+
+    if busqueda:
+        materiales = materiales.filter(
+            Q(nombre__icontains=busqueda) |
+            Q(codigo_inventario__icontains=busqueda) |
+            Q(marca__icontains=busqueda) |
+            Q(modelo__icontains=busqueda) |
+            Q(numero_serie__icontains=busqueda)
+        )
+
+    if categoria_id:
+        materiales = materiales.filter(categoria_id=categoria_id)
+
+    if estado:
+        materiales = materiales.filter(estado=estado)
 
     fila = 2
 
     for material in materiales:
-
         hoja.cell(fila, 1, material.codigo_inventario)
         hoja.cell(fila, 2, material.nombre)
 
@@ -246,13 +274,12 @@ def exportar_materiales_excel(request):
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    response[
-        "Content-Disposition"
-    ] = 'attachment; filename="inventario.xlsx"'
+    response["Content-Disposition"] = 'attachment; filename="inventario.xlsx"'
 
     workbook.save(response)
 
     return response
+
 
 @login_required
 def exportar_materiales_pdf(request):
@@ -356,6 +383,7 @@ def exportar_materiales_pdf(request):
     response["Content-Disposition"] = 'attachment; filename="inventario_monlau.pdf"'
 
     return response
+
 
 @login_required
 def exportar_movimientos_excel(request):

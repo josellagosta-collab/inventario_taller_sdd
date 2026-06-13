@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+Informes
+{% endblock %}
+
+{% block content %}
+
+<h1>Informes y exportaciones</h1>
+
+<div class="row">
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Inventario
+            </div>
+            <div class="card-body">
+                <a href="{% url 'inventario:exportar_materiales_excel' %}"
+                   class="btn btn-success">
+                    Exportar materiales Excel
+                </a>
+
+                <a href="{% url 'inventario:exportar_materiales_pdf' %}"
+                   class="btn btn-danger">
+                    Exportar materiales PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Préstamos
+            </div>
+            <div class="card-body">
+                <a href="{% url 'prestamos:exportar_prestamos_excel' %}"
+                   class="btn btn-success">
+                    Exportar préstamos Excel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Incidencias
+            </div>
+            <div class="card-body">
+                <a href="{% url 'incidencias:exportar_incidencias_excel' %}"
+                   class="btn btn-success">
+                    Exportar incidencias Excel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Movimientos
+            </div>
+            <div class="card-body">
+                <a href="{% url 'inventario:exportar_movimientos_excel' %}"
+                   class="btn btn-success">
+                    Exportar movimientos Excel
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

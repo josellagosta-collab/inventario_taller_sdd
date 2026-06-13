@@ -15,8 +15,8 @@ Listado de materiales
         Añadir material
     </a>
 
-    <a href="{% url 'inventario:exportar_materiales_excel' %}"
-       class="btn btn-success">
+    <a href="{% url 'inventario:exportar_materiales_excel' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}"
+    class="btn btn-success">
         Exportar Excel
     </a>
 
