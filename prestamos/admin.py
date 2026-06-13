@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Prestamo, LineaPrestamo
+from .models import Prestamo, LineaPrestamo, Reserva
 
 
 class LineaPrestamoInline(admin.TabularInline):
@@ -45,4 +45,31 @@ class LineaPrestamoAdmin(admin.ModelAdmin):
     search_fields = (
         "material__nombre",
         "material__codigo_inventario",
+    )
+    
+@admin.register(Reserva)
+class ReservaAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "usuario_reserva",
+        "profesor_responsable",
+        "material",
+        "cantidad",
+        "fecha_reserva",
+        "fecha_prevista_recogida",
+        "estado",
+    )
+
+    list_filter = (
+        "estado",
+        "fecha_reserva",
+        "fecha_prevista_recogida",
+    )
+
+    search_fields = (
+        "usuario_reserva__username",
+        "profesor_responsable__username",
+        "material__nombre",
+        "material__codigo_inventario",
+        "observaciones",
     )

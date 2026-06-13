@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from inventario.models import Material
 from django.utils import timezone
+from inventario.models import Material
 
 
 class Prestamo(models.Model):
@@ -38,9 +38,9 @@ class Prestamo(models.Model):
 
     def esta_retrasado(self):
         return (
-        self.estado == "activo"
-        and self.fecha_prevista_devolucion < timezone.now().date()
-    )
+            self.estado == "activo"
+            and self.fecha_prevista_devolucion < timezone.now().date()
+        )
 
     class Meta:
         verbose_name = "Préstamo"
@@ -72,3 +72,50 @@ class LineaPrestamo(models.Model):
 
     def __str__(self):
         return f"{self.material.nombre} x {self.cantidad}"
+
+
+class Reserva(models.Model):
+    ESTADOS = [
+        ("activa", "Activa"),
+        ("convertida", "Convertida en préstamo"),
+        ("cancelada", "Cancelada"),
+        ("caducada", "Caducada"),
+    ]
+
+    usuario_reserva = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="reservas_realizadas"
+    )
+
+    profesor_responsable = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="reservas_gestionadas"
+    )
+
+    material = models.ForeignKey(
+        Material,
+        on_delete=models.PROTECT,
+        related_name="reservas"
+    )
+
+    cantidad = models.PositiveIntegerField(default=1)
+    fecha_reserva = models.DateField(auto_now_add=True)
+    fecha_prevista_recogida = models.DateField()
+
+    estado = models.CharField(
+        max_length=50,
+        choices=ESTADOS,
+        default="activa"
+    )
+
+    observaciones = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Reserva"
+        verbose_name_plural = "Reservas"
+        ordering = ["-fecha_reserva"]
+
+    def __str__(self):
+        return f"Reserva {self.id} - {self.material.nombre}"

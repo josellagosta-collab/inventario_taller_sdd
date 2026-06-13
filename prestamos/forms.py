@@ -1,6 +1,8 @@
 from django import forms
 from .models import Prestamo, LineaPrestamo
 from inventario.models import Material
+from .models import Reserva
+from inventario.models import Material
 
 class PrestamoForm(forms.ModelForm):
 
@@ -79,3 +81,36 @@ class LineaPrestamoForm(forms.ModelForm):
             )
 
         return material
+    
+class ReservaForm(forms.ModelForm):
+
+    class Meta:
+        model = Reserva
+
+        fields = [
+            "usuario_reserva",
+            "profesor_responsable",
+            "material",
+            "cantidad",
+            "fecha_prevista_recogida",
+            "observaciones",
+        ]
+
+        widgets = {
+            "fecha_prevista_recogida": forms.DateInput(attrs={"type": "date"}),
+            "observaciones": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["material"].queryset = Material.objects.filter(
+            estado="disponible"
+        )
+
+        for campo in self.fields.values():
+            campo.widget.attrs["class"] = "form-control"
+
+        for nombre, campo in self.fields.items():
+            if isinstance(campo.widget, (forms.Select, forms.SelectMultiple)):
+                campo.widget.attrs["class"] = "form-select"

@@ -10,4 +10,6 @@ urlpatterns = [
     path("prestamos/<int:prestamo_id>/", views.detalle_prestamo, name="detalle_prestamo"),
     path("prestamos/exportar/excel/", views.exportar_prestamos_excel, name="exportar_prestamos_excel"),
     path("prestamos/exportar/pdf/", views.exportar_prestamos_pdf, name="exportar_prestamos_pdf"),
+    path("reservas/nueva/", views.crear_reserva, name="crear_reserva"),
+    path("reservas/", views.lista_reservas, name="lista_reservas"),
 ]

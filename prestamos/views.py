@@ -1,5 +1,9 @@
-from .forms import PrestamoForm, LineaPrestamoForm
-from .models import Prestamo
+from .forms import (
+    PrestamoForm,
+    LineaPrestamoForm,
+    ReservaForm,
+) 
+from .models import Prestamo, LineaPrestamo, Reserva
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -350,3 +354,43 @@ def exportar_prestamos_pdf(request):
     response["Content-Disposition"] = 'attachment; filename="prestamos.pdf"'
 
     return response
+
+@login_required
+def crear_reserva(request):
+    if request.method == "POST":
+        form = ReservaForm(request.POST)
+
+        if form.is_valid():
+            reserva = form.save()
+
+            material = reserva.material
+            material.estado = "reservado"
+            material.save()
+
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="edicion",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion=f"Reserva creada. Reserva ID: {reserva.id}"
+            )
+
+            return redirect("prestamos:lista_reservas")
+
+    else:
+        form = ReservaForm()
+
+    return render(request, "prestamos/crear_reserva.html", {
+        "form": form,
+    })
+    
+@login_required
+def lista_reservas(request):
+    reservas = Reserva.objects.select_related(
+        "usuario_reserva",
+        "profesor_responsable",
+        "material"
+    ).all()
+
+    return render(request, "prestamos/lista_reservas.html", {
+        "reservas": reservas,
+    })
