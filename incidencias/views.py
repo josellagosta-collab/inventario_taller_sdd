@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-
+from .models import Incidencia
 from inventario.models import Material, MovimientoInventario
 from .forms import IncidenciaForm
 
@@ -39,4 +39,15 @@ def crear_incidencia(request, material_id):
     return render(request, "incidencias/crear_incidencia.html", {
         "form": form,
         "material": material,
+    })
+    
+@login_required
+def lista_incidencias(request):
+    incidencias = Incidencia.objects.select_related(
+        "material",
+        "usuario"
+    ).all()
+
+    return render(request, "incidencias/lista_incidencias.html", {
+        "incidencias": incidencias,
     })

@@ -9,4 +9,10 @@ urlpatterns = [
         views.crear_incidencia,
         name="crear_incidencia"
     ),
+    
+    path(
+    "incidencias/",
+    views.lista_incidencias,
+    name="lista_incidencias"
+    ),  
 ]
