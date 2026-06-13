@@ -32,3 +32,15 @@ class IncidenciaForm(forms.ModelForm):
                 )
             ):
                 campo.widget.attrs["class"] = "form-select"
+                
+class ResolverIncidenciaForm(forms.Form):
+
+    solucion = forms.CharField(
+        label="Solución aplicada",
+        widget=forms.Textarea(
+            attrs={
+                "rows": 4,
+                "class": "form-control"
+            }
+        )
+    )

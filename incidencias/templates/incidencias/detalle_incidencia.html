@@ -112,6 +112,15 @@ Detalle incidencia
 
 </table>
 
+{% if incidencia.estado != "cerrada" %}
+
+    <a href="{% url 'incidencias:resolver_incidencia' incidencia.id %}"
+       class="btn btn-success">
+        Resolver incidencia
+    </a>
+
+{% endif %}
+
 <a href="{% url 'incidencias:lista_incidencias' %}"
    class="btn btn-secondary">
     Volver al listado

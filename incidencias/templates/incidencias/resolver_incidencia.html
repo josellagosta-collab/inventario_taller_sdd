@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Resolver incidencia</h1>
+
+<div class="card shadow">
+
+    <div class="card-header bg-success text-white">
+        {{ incidencia.titulo }}
+    </div>
+
+    <div class="card-body">
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit"
+                    class="btn btn-success">
+                Resolver incidencia
+            </button>
+
+            <a href="{% url 'incidencias:detalle_incidencia' incidencia.id %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

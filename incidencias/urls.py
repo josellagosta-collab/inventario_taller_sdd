@@ -21,4 +21,10 @@ urlpatterns = [
     name="detalle_incidencia"
     ),
     
+    path(
+    "incidencias/<int:incidencia_id>/resolver/",
+    views.resolver_incidencia,
+    name="resolver_incidencia"
+    ),
+    
 ]
