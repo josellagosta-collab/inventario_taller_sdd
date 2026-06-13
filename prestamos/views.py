@@ -664,3 +664,44 @@ def exportar_reservas_pdf(request):
     response["Content-Disposition"] = 'attachment; filename="reservas.pdf"'
 
     return response
+
+@login_required
+def detalle_reserva(request, reserva_id):
+    reserva = get_object_or_404(
+        Reserva.objects.select_related(
+            "usuario_reserva",
+            "profesor_responsable",
+            "material"
+        ),
+        id=reserva_id
+    )
+
+    return render(request, "prestamos/detalle_reserva.html", {
+        "reserva": reserva,
+    })
+    
+@login_required
+def actualizar_reservas_caducadas(request):
+    hoy = timezone.now().date()
+
+    reservas = Reserva.objects.filter(
+        estado="activa",
+        fecha_prevista_recogida__lt=hoy
+    )
+
+    for reserva in reservas:
+        reserva.estado = "caducada"
+        reserva.save()
+
+        material = reserva.material
+        material.estado = "disponible"
+        material.save()
+
+        MovimientoInventario.objects.create(
+            material=material,
+            tipo="edicion",
+            usuario=request.user if request.user.is_authenticated else None,
+            descripcion=f"Reserva caducada automáticamente. Reserva ID: {reserva.id}"
+        )
+
+    return redirect("prestamos:lista_reservas")

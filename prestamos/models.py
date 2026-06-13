@@ -111,6 +111,12 @@ class Reserva(models.Model):
     )
 
     observaciones = models.TextField(blank=True, null=True)
+    
+    def esta_caducada(self):
+        return (
+            self.estado == "activa"
+            and self.fecha_prevista_recogida < timezone.now().date()
+        )
 
     class Meta:
         verbose_name = "Reserva"

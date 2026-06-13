@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detalle reserva
+{% endblock %}
+
+{% block content %}
+
+<h1>Detalle de reserva</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        Reserva #{{ reserva.id }}
+    </div>
+
+    <div class="card-body">
+        <p><strong>Usuario:</strong> {{ reserva.usuario_reserva.username }}</p>
+        <p><strong>Profesor responsable:</strong> {{ reserva.profesor_responsable.username }}</p>
+        <p><strong>Material:</strong> {{ reserva.material.nombre }}</p>
+        <p><strong>Cantidad:</strong> {{ reserva.cantidad }}</p>
+        <p><strong>Fecha reserva:</strong> {{ reserva.fecha_reserva }}</p>
+        <p><strong>Fecha prevista recogida:</strong> {{ reserva.fecha_prevista_recogida }}</p>
+        <p><strong>Estado:</strong> {{ reserva.get_estado_display }}</p>
+        <p><strong>Observaciones:</strong> {{ reserva.observaciones|default:"Sin observaciones" }}</p>
+    </div>
+</div>
+
+{% if reserva.estado == "activa" %}
+    <a href="{% url 'prestamos:convertir_reserva_en_prestamo' reserva.id %}"
+       class="btn btn-primary">
+        Convertir en préstamo
+    </a>
+
+    <a href="{% url 'prestamos:cancelar_reserva' reserva.id %}"
+       class="btn btn-warning">
+        Cancelar reserva
+    </a>
+{% endif %}
+
+<a href="{% url 'prestamos:lista_reservas' %}"
+   class="btn btn-secondary">
+    Volver
+</a>
+
+{% endblock %}

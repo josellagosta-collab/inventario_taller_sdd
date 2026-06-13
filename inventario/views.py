@@ -253,6 +253,16 @@ def dashboard(request):
     reservas_canceladas = Reserva.objects.filter(estado="cancelada").count()
 
     reservas_caducadas = Reserva.objects.filter(estado="caducada").count()
+    
+    reservas_caducadas_pendientes = Reserva.objects.filter(
+        estado="activa",
+        fecha_prevista_recogida__lt=hoy
+    ).count()
+    
+    ultimas_reservas = Reserva.objects.select_related(
+        "usuario_reserva",
+        "material"
+    ).order_by("-fecha_reserva")[:5]
 
     return render(request, "inventario/dashboard.html", {
         "total_materiales": total_materiales,
@@ -276,6 +286,8 @@ def dashboard(request):
         "reservas_convertidas": reservas_convertidas,
         "reservas_canceladas": reservas_canceladas,
         "reservas_caducadas": reservas_caducadas,
+        "reservas_caducadas_pendientes": reservas_caducadas_pendientes,
+        "ultimas_reservas": ultimas_reservas,
     })
 
 
