@@ -7,9 +7,20 @@ Listado de materiales
 {% block content %}
 
 <h1>Listado de materiales</h1>
-<a href="{% url 'inventario:crear_material' %}" class="btn btn-success mb-3">
-    Añadir material
-</a>
+
+<div class="d-flex gap-2 mb-3">
+
+    <a href="{% url 'inventario:crear_material' %}"
+       class="btn btn-success">
+        Añadir material
+    </a>
+
+    <a href="{% url 'inventario:exportar_materiales_excel' %}"
+       class="btn btn-success">
+        Exportar Excel
+    </a>
+
+</div>
 
 <form method="get" class="card card-body mb-4">
 

@@ -11,4 +11,5 @@ urlpatterns = [
     path("materiales/<int:material_id>/retirar/", views.retirar_material, name="retirar_material"),
     path("movimientos/", views.lista_movimientos, name="lista_movimientos"),
     path("", views.dashboard, name="dashboard"),
+    path("materiales/exportar/excel/", views.exportar_materiales_excel, name="exportar_materiales_excel"),
 ]

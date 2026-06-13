@@ -9,6 +9,8 @@ from prestamos.models import Prestamo
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from usuarios.decorators import pertenece_a_grupo
+from django.http import HttpResponse
+import openpyxl
 
 @login_required
 def lista_materiales(request):
@@ -182,3 +184,59 @@ def dashboard(request):
         "prestamos_retrasados": prestamos_retrasados,
         "total_movimientos": total_movimientos,
     })
+    
+@login_required
+def exportar_materiales_excel(request):
+
+    workbook = openpyxl.Workbook()
+
+    hoja = workbook.active
+
+    hoja.title = "Materiales"
+
+    encabezados = [
+        "Código",
+        "Nombre",
+        "Categoría",
+        "Marca",
+        "Modelo",
+        "Cantidad",
+        "Estado",
+    ]
+
+    for columna, texto in enumerate(encabezados, start=1):
+        hoja.cell(row=1, column=columna, value=texto)
+
+    materiales = Material.objects.all()
+
+    fila = 2
+
+    for material in materiales:
+
+        hoja.cell(fila, 1, material.codigo_inventario)
+        hoja.cell(fila, 2, material.nombre)
+
+        hoja.cell(
+            fila,
+            3,
+            material.categoria.nombre if material.categoria else ""
+        )
+
+        hoja.cell(fila, 4, material.marca)
+        hoja.cell(fila, 5, material.modelo)
+        hoja.cell(fila, 6, material.cantidad)
+        hoja.cell(fila, 7, material.get_estado_display())
+
+        fila += 1
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response[
+        "Content-Disposition"
+    ] = 'attachment; filename="inventario.xlsx"'
+
+    workbook.save(response)
+
+    return response
