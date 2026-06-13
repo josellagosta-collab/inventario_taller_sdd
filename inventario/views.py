@@ -8,6 +8,7 @@ from documentos.models import Documento
 from prestamos.models import Prestamo
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from usuarios.decorators import pertenece_a_grupo
 
 @login_required
 def lista_materiales(request):
@@ -56,6 +57,7 @@ def detalle_material(request, material_id):
 
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def crear_material(request):
     if request.method == "POST":
         form = MaterialForm(request.POST)
@@ -78,6 +80,7 @@ def crear_material(request):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def editar_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -97,6 +100,7 @@ def editar_material(request, material_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def retirar_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -116,6 +120,7 @@ def retirar_material(request, material_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def lista_movimientos(request):
     movimientos = MovimientoInventario.objects.select_related(
         "material",
