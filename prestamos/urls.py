@@ -12,4 +12,6 @@ urlpatterns = [
     path("prestamos/exportar/pdf/", views.exportar_prestamos_pdf, name="exportar_prestamos_pdf"),
     path("reservas/nueva/", views.crear_reserva, name="crear_reserva"),
     path("reservas/", views.lista_reservas, name="lista_reservas"),
+    path("reservas/<int:reserva_id>/cancelar/", views.cancelar_reserva, name="cancelar_reserva"),
+    path("reservas/<int:reserva_id>/convertir/", views.convertir_reserva_en_prestamo, name="convertir_reserva_en_prestamo"),
 ]

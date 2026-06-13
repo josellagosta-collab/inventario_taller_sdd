@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+Convertir reserva
+{% endblock %}
+
+{% block content %}
+
+<h1>Convertir reserva en préstamo</h1>
+
+<div class="alert alert-info">
+    Vas a convertir esta reserva en un préstamo activo.
+</div>
+
+<p><strong>Material:</strong> {{ reserva.material.nombre }}</p>
+<p><strong>Usuario:</strong> {{ reserva.usuario_reserva.username }}</p>
+<p><strong>Profesor responsable:</strong> {{ reserva.profesor_responsable.username }}</p>
+<p><strong>Cantidad:</strong> {{ reserva.cantidad }}</p>
+<p><strong>Fecha prevista recogida:</strong> {{ reserva.fecha_prevista_recogida }}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-primary">
+        Confirmar conversión
+    </button>
+
+    <a href="{% url 'prestamos:lista_reservas' %}"
+       class="btn btn-secondary">
+        Volver
+    </a>
+</form>
+
+{% endblock %}

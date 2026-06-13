@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cancelar reserva
+{% endblock %}
+
+{% block content %}
+
+<h1>Cancelar reserva</h1>
+
+<div class="alert alert-warning">
+    Vas a cancelar esta reserva.
+</div>
+
+<p><strong>Material:</strong> {{ reserva.material.nombre }}</p>
+<p><strong>Usuario:</strong> {{ reserva.usuario_reserva.username }}</p>
+<p><strong>Fecha recogida:</strong> {{ reserva.fecha_prevista_recogida }}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-warning">
+        Confirmar cancelación
+    </button>
+
+    <a href="{% url 'prestamos:lista_reservas' %}"
+       class="btn btn-secondary">
+        Volver
+    </a>
+</form>
+
+{% endblock %}

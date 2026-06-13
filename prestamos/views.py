@@ -394,3 +394,67 @@ def lista_reservas(request):
     return render(request, "prestamos/lista_reservas.html", {
         "reservas": reservas,
     })
+    
+@login_required
+def cancelar_reserva(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+
+    if request.method == "POST":
+        reserva.estado = "cancelada"
+        reserva.save()
+
+        material = reserva.material
+        material.estado = "disponible"
+        material.save()
+
+        MovimientoInventario.objects.create(
+            material=material,
+            tipo="edicion",
+            usuario=request.user if request.user.is_authenticated else None,
+            descripcion=f"Reserva cancelada. Reserva ID: {reserva.id}"
+        )
+
+        return redirect("prestamos:lista_reservas")
+
+    return render(request, "prestamos/cancelar_reserva.html", {
+        "reserva": reserva,
+    })
+    
+@login_required
+def convertir_reserva_en_prestamo(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+
+    if request.method == "POST":
+        prestamo = Prestamo.objects.create(
+            usuario_receptor=reserva.usuario_reserva,
+            profesor_responsable=reserva.profesor_responsable,
+            fecha_prevista_devolucion=reserva.fecha_prevista_recogida,
+            estado="activo",
+            observaciones=f"Préstamo generado desde reserva ID {reserva.id}"
+        )
+
+        LineaPrestamo.objects.create(
+            prestamo=prestamo,
+            material=reserva.material,
+            cantidad=reserva.cantidad
+        )
+
+        reserva.estado = "convertida"
+        reserva.save()
+
+        material = reserva.material
+        material.estado = "prestado"
+        material.save()
+
+        MovimientoInventario.objects.create(
+            material=material,
+            tipo="prestamo",
+            usuario=request.user if request.user.is_authenticated else None,
+            descripcion=f"Reserva convertida en préstamo. Reserva ID: {reserva.id}. Préstamo ID: {prestamo.id}"
+        )
+
+        return redirect("prestamos:detalle_prestamo", prestamo_id=prestamo.id)
+
+    return render(request, "prestamos/convertir_reserva.html", {
+        "reserva": reserva,
+    })

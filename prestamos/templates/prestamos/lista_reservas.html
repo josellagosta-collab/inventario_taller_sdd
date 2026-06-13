@@ -25,6 +25,7 @@ Reservas
             <th>Fecha reserva</th>
             <th>Fecha recogida</th>
             <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
 
@@ -41,12 +42,27 @@ Reservas
                 <td>{{ reserva.fecha_reserva }}</td>
                 <td>{{ reserva.fecha_prevista_recogida }}</td>
                 <td>{{ reserva.get_estado_display }}</td>
+               <td>
+                    {% if reserva.estado == "activa" %}
+                        <a href="{% url 'prestamos:convertir_reserva_en_prestamo' reserva.id %}"
+                        class="btn btn-sm btn-primary">
+                            Convertir
+                        </a>
+
+                        <a href="{% url 'prestamos:cancelar_reserva' reserva.id %}"
+                        class="btn btn-sm btn-warning">
+                            Cancelar
+                        </a>
+                    {% else %}
+                        <span class="text-muted">Sin acciones</span>
+                    {% endif %}
+                </td>
             </tr>
 
         {% empty %}
 
             <tr>
-                <td colspan="8" class="text-center">
+                <td colspan="9" class="text-center">
                     No hay reservas registradas.
                 </td>
             </tr>
