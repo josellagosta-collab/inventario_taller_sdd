@@ -29,6 +29,7 @@ from openpyxl.utils import get_column_letter
 from incidencias.models import Incidencia
 from django.db.models import F
 from prestamos.models import Prestamo, Reserva
+from auditoria.services import registrar_accion
 
 
 @login_required
@@ -109,6 +110,12 @@ def crear_material(request):
                 usuario=request.user if request.user.is_authenticated else None,
                 descripcion="Alta de material desde la web"
             )
+            registrar_accion(
+                request,
+                "crear",
+                "Alta de material desde la web",
+                material
+            )
             return redirect("inventario:detalle_material", material_id=material.id)
 
     else:
@@ -129,6 +136,18 @@ def editar_material(request, material_id):
 
         if form.is_valid():
             material = form.save()
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="edicion",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion="Edición de material desde la web"
+            )
+            registrar_accion(
+                request,
+                "editar",
+                "Edición de material desde la web",
+                material
+            )
             return redirect("inventario:detalle_material", material_id=material.id)
 
     else:
@@ -153,6 +172,12 @@ def retirar_material(request, material_id):
             tipo="retirada",
             usuario=request.user if request.user.is_authenticated else None,
             descripcion="Retirada lógica de material"
+        )
+        registrar_accion(
+            request,
+            "retirar",
+            "Retirada lógica de material",
+            material
         )
         return redirect("inventario:lista_materiales")
 

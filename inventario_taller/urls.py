@@ -27,6 +27,7 @@ urlpatterns = [
     path("", include("prestamos.urls")),
     path("", include("incidencias.urls")),
     path("", include("informes.urls")),
+    path("", include("auditoria.urls")),
 ]
 
 if settings.DEBUG:

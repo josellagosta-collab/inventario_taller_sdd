@@ -15,6 +15,149 @@
         input[type="email"] {
             class: form-control;
         }
+
+        body {
+            background-color: #f5f7fb;
+        }
+
+        .app-shell {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            max-width: 1600px;
+            margin: 0;
+            padding: 1.5rem 1.5rem 1.5rem 0;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 1rem;
+            flex: 0 0 260px;
+            z-index: 10;
+        }
+
+        .sidebar-panel {
+            background: #0051A0;
+            border: 1px solid #0051A0;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            padding: 0.75rem;
+        }
+
+        .sidebar-title {
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            padding: 0.5rem 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .side-menu {
+            position: relative;
+        }
+
+        .side-menu-toggle {
+            align-items: center;
+            background: transparent;
+            border: 0;
+            border-radius: 6px;
+            color: #ffffff;
+            display: flex;
+            font-weight: 700;
+            justify-content: space-between;
+            padding: 0.65rem 0.75rem;
+            text-align: left;
+            width: 100%;
+        }
+
+        .side-menu-toggle::after {
+            content: ">";
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .side-menu:hover .side-menu-toggle,
+        .side-menu:focus-within .side-menu-toggle {
+            background-color: #ffffff;
+            color: #0051A0;
+        }
+
+        .side-menu:hover .side-menu-toggle::after,
+        .side-menu:focus-within .side-menu-toggle::after {
+            color: #0051A0;
+        }
+
+        .side-submenu {
+            background: #ffffff;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+            display: none;
+            left: calc(100% + 0.5rem);
+            min-width: 230px;
+            padding: 0.5rem;
+            position: absolute;
+            top: 0;
+        }
+
+        .side-menu:hover .side-submenu,
+        .side-menu:focus-within .side-submenu {
+            display: block;
+        }
+
+        .side-submenu a {
+            border-radius: 6px;
+            color: #1e293b;
+            display: block;
+            padding: 0.55rem 0.75rem;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .side-submenu a:hover,
+        .side-submenu a:focus {
+            background-color: #0051A0;
+            color: #ffffff;
+        }
+
+        .content-area {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 0;
+            padding: 1.5rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .app-shell {
+                display: block;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: static;
+                margin-bottom: 1rem;
+            }
+
+            .side-submenu {
+                box-shadow: none;
+                left: auto;
+                margin: 0 0 0.5rem 0.75rem;
+                min-width: 0;
+                position: static;
+                width: auto;
+            }
+
+            .side-menu-toggle::after {
+                content: "v";
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -48,63 +191,8 @@
             <ul class="navbar-nav ms-auto">
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'inventario:lista_materiales' %}">
-                        Materiales
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'inventario:crear_material' %}">
-                        Añadir material
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'documentos:lista_documentos' %}">
-                        Documentos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'prestamos:crear_prestamo' %}">
-                         Nuevo préstamo
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'prestamos:lista_prestamos' %}">
-                         Préstamos
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'inventario:lista_movimientos' %}">
-                        Movimientos
-                    </a>
-                </li>
-
-                               
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'incidencias:lista_incidencias' %}">
-                            Incidencias
-                        </a>
-                    </li>
-                
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'informes:panel_informes' %}">
-                        Informes
-                    </a>
-                </li>
-
-                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'inventario:dashboard' %}">
                         Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'prestamos:lista_reservas' %}">
-                        Reservas
                     </a>
                 </li>
 
@@ -114,32 +202,32 @@
                     </a>
                 </li>
 
-{% if user.is_authenticated %}
+                {% if user.is_authenticated %}
 
-    <li class="nav-item">
-        <span class="nav-link">
-            Usuario: {{ user.username }}
-        </span>
-    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            Usuario: {{ user.username }}
+                        </span>
+                    </li>
 
-    <li class="nav-item">
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-light btn-sm mt-1">
-                Cerrar sesión
-            </button>
-        </form>
-    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light btn-sm mt-1">
+                                Cerrar sesión
+                            </button>
+                        </form>
+                    </li>
 
-{% else %}
+                {% else %}
 
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'login' %}">
-            Iniciar sesión
-        </a>
-    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            Iniciar sesión
+                        </a>
+                    </li>
 
-{% endif %}
+                {% endif %}
 
             </ul>
 
@@ -148,12 +236,107 @@
     </div>
 </nav>
 
-<main class="container mt-4">
+<div class="app-shell">
 
-    {% block content %}
-    {% endblock %}
+    <aside class="sidebar">
+        <nav class="sidebar-panel" aria-label="Navegación principal">
 
-</main>
+            <div class="sidebar-title">
+                Módulos
+            </div>
+
+            <div class="side-menu">
+                <button type="button" class="side-menu-toggle">
+                    Inventario
+                </button>
+
+                <div class="side-submenu">
+                    <a href="{% url 'inventario:lista_materiales' %}">
+                        Materiales
+                    </a>
+                    <a href="{% url 'inventario:crear_material' %}">
+                        Añadir material
+                    </a>
+                    <a href="{% url 'inventario:materiales_stock_bajo' %}">
+                        Stock bajo
+                    </a>
+                    <a href="{% url 'inventario:lista_movimientos' %}">
+                        Movimientos
+                    </a>
+                </div>
+            </div>
+
+            <div class="side-menu">
+                <button type="button" class="side-menu-toggle">
+                    Préstamos y reservas
+                </button>
+
+                <div class="side-submenu">
+                    <a href="{% url 'prestamos:lista_prestamos' %}">
+                        Préstamos
+                    </a>
+                    <a href="{% url 'prestamos:crear_prestamo' %}">
+                        Nuevo préstamo
+                    </a>
+                    <a href="{% url 'prestamos:lista_reservas' %}">
+                        Reservas
+                    </a>
+                    <a href="{% url 'prestamos:crear_reserva' %}">
+                        Nueva reserva
+                    </a>
+                </div>
+            </div>
+
+            <div class="side-menu">
+                <button type="button" class="side-menu-toggle">
+                    Documentación
+                </button>
+
+                <div class="side-submenu">
+                    <a href="{% url 'documentos:lista_documentos' %}">
+                        Documentos
+                    </a>
+                </div>
+            </div>
+
+            <div class="side-menu">
+                <button type="button" class="side-menu-toggle">
+                    Soporte
+                </button>
+
+                <div class="side-submenu">
+                    <a href="{% url 'incidencias:lista_incidencias' %}">
+                        Incidencias
+                    </a>
+                </div>
+            </div>
+
+            <div class="side-menu">
+                <button type="button" class="side-menu-toggle">
+                    Informes y control
+                </button>
+
+                <div class="side-submenu">
+                    <a href="{% url 'informes:panel_informes' %}">
+                        Informes
+                    </a>
+                    <a href="{% url 'auditoria:lista_auditoria' %}">
+                        Auditoría
+                    </a>
+                </div>
+            </div>
+
+        </nav>
+    </aside>
+
+    <main class="content-area">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 

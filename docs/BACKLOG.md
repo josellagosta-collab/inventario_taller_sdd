@@ -7,6 +7,13 @@
 **Metodología:** SDD  
 **Estado:** Planificación  
 
+## Estados de las tareas
+
+- **Hecho:** existe implementación en el proyecto.
+- **Parcial:** existe una parte, pero falta completar funcionalidad o integración.
+- **Pendiente:** no se aprecia implementación todavía.
+- **Por revisar:** necesita validación manual o decisión de alcance.
+
 ---
 
 # EP001 - Configuración inicial del proyecto
@@ -17,16 +24,16 @@ Preparar el entorno de desarrollo.
 
 ## Tareas
 
-- BL-001 Crear repositorio GitHub.
-- BL-002 Crear proyecto Jira.
-- BL-003 Crear entorno virtual Python.
-- BL-004 Configurar VS Code.
-- BL-005 Instalar Django.
-- BL-006 Instalar PostgreSQL.
-- BL-007 Configurar conexión PostgreSQL.
-- BL-008 Crear archivo `requirements.txt`.
-- BL-009 Configurar Git.
-- BL-010 Crear estructura inicial del proyecto.
+- BL-001 [Por revisar] Crear repositorio GitHub.
+- BL-002 [Por revisar] Crear proyecto Jira.
+- BL-003 [Hecho] Crear entorno virtual Python.
+- BL-004 [Por revisar] Configurar VS Code.
+- BL-005 [Hecho] Instalar Django.
+- BL-006 [Por revisar] Instalar PostgreSQL.
+- BL-007 [Hecho] Configurar conexión PostgreSQL.
+- BL-008 [Hecho] Crear archivo `requirements.txt`.
+- BL-009 [Hecho] Configurar Git.
+- BL-010 [Hecho] Crear estructura inicial del proyecto.
 
 ---
 
@@ -40,11 +47,11 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-011 Crear aplicación `usuarios`.
-- BL-012 Configurar Django Authentication.
-- BL-013 Crear página de login.
-- BL-014 Crear página de logout.
-- BL-015 Crear recuperación de contraseña.
+- BL-011 [Hecho] Crear aplicación `usuarios`.
+- BL-012 [Hecho] Configurar Django Authentication.
+- BL-013 [Hecho] Crear página de login.
+- BL-014 [Parcial] Crear página de logout.
+- BL-015 [Pendiente] Crear recuperación de contraseña.
 
 ---
 
@@ -56,11 +63,11 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-016 Crear modelo `PerfilUsuario`.
-- BL-017 Crear modelo `Rol`.
-- BL-018 Crear CRUD de usuarios.
-- BL-019 Crear CRUD de roles.
-- BL-020 Implementar permisos.
+- BL-016 [Pendiente] Crear modelo `PerfilUsuario`.
+- BL-017 [Pendiente] Crear modelo `Rol`.
+- BL-018 [Pendiente] Crear CRUD de usuarios.
+- BL-019 [Pendiente] Crear CRUD de roles.
+- BL-020 [Parcial] Implementar permisos.
 
 ---
 
@@ -74,13 +81,13 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-021 Crear aplicación `inventario`.
-- BL-022 Crear modelo `Categoria`.
-- BL-023 Crear modelo `Subcategoria`.
-- BL-024 Crear modelo `Proveedor`.
-- BL-025 Crear modelo `Material`.
-- BL-026 Crear migraciones.
-- BL-027 Aplicar migraciones.
+- BL-021 [Hecho] Crear aplicación `inventario`.
+- BL-022 [Hecho] Crear modelo `Categoria`.
+- BL-023 [Hecho] Crear modelo `Subcategoria`.
+- BL-024 [Hecho] Crear modelo `Proveedor`.
+- BL-025 [Hecho] Crear modelo `Material`.
+- BL-026 [Hecho] Crear migraciones.
+- BL-027 [Por revisar] Aplicar migraciones.
 
 ---
 
@@ -92,10 +99,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-028 Crear vista de listado de material.
-- BL-029 Crear vista de detalle de material.
-- BL-030 Crear paginación.
-- BL-031 Crear filtros básicos.
+- BL-028 [Hecho] Crear vista de listado de material.
+- BL-029 [Hecho] Crear vista de detalle de material.
+- BL-030 [Hecho] Crear paginación.
+- BL-031 [Hecho] Crear filtros básicos.
 
 ---
 
@@ -107,9 +114,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-032 Crear formulario de edición.
-- BL-033 Validar datos.
-- BL-034 Registrar auditoría.
+- BL-032 [Hecho] Crear formulario de edición.
+- BL-033 [Parcial] Validar datos.
+- BL-034 [Parcial] Registrar auditoría.
 
 ---
 
@@ -121,9 +128,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-035 Implementar baja lógica.
-- BL-036 Registrar movimiento de baja.
-- BL-037 Actualizar estado.
+- BL-035 [Hecho] Implementar baja lógica.
+- BL-036 [Hecho] Registrar movimiento de baja.
+- BL-037 [Hecho] Actualizar estado.
 
 ---
 
@@ -137,14 +144,14 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-038 Crear aplicación `ubicaciones`.
-- BL-039 Crear modelo `Edificio`.
-- BL-040 Crear modelo `Aula`.
-- BL-041 Crear modelo `Armario`.
-- BL-042 Crear modelo `Estanteria`.
-- BL-043 Crear modelo `Caja`.
-- BL-044 Crear modelo `Ubicacion`.
-- BL-045 Crear CRUD de ubicaciones.
+- BL-038 [Hecho] Crear aplicación `ubicaciones`.
+- BL-039 [Hecho] Crear modelo `Edificio`.
+- BL-040 [Hecho] Crear modelo `Aula`.
+- BL-041 [Hecho] Crear modelo `Armario`.
+- BL-042 [Hecho] Crear modelo `Estanteria`.
+- BL-043 [Hecho] Crear modelo `Caja`.
+- BL-044 [Hecho] Crear modelo `Ubicacion`.
+- BL-045 [Pendiente] Crear CRUD de ubicaciones.
 
 ---
 
@@ -158,10 +165,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-046 Crear modelo `Documento`.
-- BL-047 Crear subida de archivos.
-- BL-048 Crear descarga de archivos.
-- BL-049 Crear eliminación de documentos.
+- BL-046 [Hecho] Crear modelo `Documento`.
+- BL-047 [Hecho] Crear subida de archivos.
+- BL-048 [Parcial] Crear descarga de archivos.
+- BL-049 [Hecho] Crear eliminación de documentos.
 
 ---
 
@@ -173,10 +180,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-050 Crear modelo `Fotografia`.
-- BL-051 Configurar `MEDIA_ROOT`.
-- BL-052 Crear carga de imágenes.
-- BL-053 Mostrar imágenes.
+- BL-050 [Pendiente] Crear modelo `Fotografia`.
+- BL-051 [Hecho] Configurar `MEDIA_ROOT`.
+- BL-052 [Parcial] Crear carga de imágenes.
+- BL-053 [Pendiente] Mostrar imágenes.
 
 ---
 
@@ -190,12 +197,12 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-054 Crear aplicación `prestamos`.
-- BL-055 Crear modelo `Prestamo`.
-- BL-056 Crear modelo `LineaPrestamo`.
-- BL-057 Crear formulario de préstamo.
-- BL-058 Actualizar estado del material.
-- BL-059 Registrar movimiento de préstamo.
+- BL-054 [Hecho] Crear aplicación `prestamos`.
+- BL-055 [Hecho] Crear modelo `Prestamo`.
+- BL-056 [Hecho] Crear modelo `LineaPrestamo`.
+- BL-057 [Hecho] Crear formulario de préstamo.
+- BL-058 [Hecho] Actualizar estado del material.
+- BL-059 [Hecho] Registrar movimiento de préstamo.
 
 ---
 
@@ -207,9 +214,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-060 Crear formulario de devolución.
-- BL-061 Actualizar estado del material.
-- BL-062 Registrar movimiento de devolución.
+- BL-060 [Hecho] Crear formulario de devolución.
+- BL-061 [Hecho] Actualizar estado del material.
+- BL-062 [Hecho] Registrar movimiento de devolución.
 
 ---
 
@@ -221,9 +228,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-063 Crear listado de préstamos.
-- BL-064 Crear filtros de préstamos.
-- BL-065 Crear histórico.
+- BL-063 [Hecho] Crear listado de préstamos.
+- BL-064 [Hecho] Crear filtros de préstamos.
+- BL-065 [Parcial] Crear histórico.
 
 ---
 
@@ -237,13 +244,13 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-066 Crear modelo `MovimientoInventario`.
-- BL-067 Registrar altas.
-- BL-068 Registrar bajas.
-- BL-069 Registrar préstamos.
-- BL-070 Registrar devoluciones.
-- BL-071 Registrar traslados.
-- BL-072 Crear listado de movimientos.
+- BL-066 [Hecho] Crear modelo `MovimientoInventario`.
+- BL-067 [Hecho] Registrar altas.
+- BL-068 [Hecho] Registrar bajas.
+- BL-069 [Hecho] Registrar préstamos.
+- BL-070 [Hecho] Registrar devoluciones.
+- BL-071 [Pendiente] Registrar traslados.
+- BL-072 [Hecho] Crear listado de movimientos.
 
 ---
 
@@ -257,11 +264,11 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-073 Crear aplicación `incidencias`.
-- BL-074 Crear modelo `Incidencia`.
-- BL-075 Crear modelo `ComentarioIncidencia`.
-- BL-076 Crear formulario de incidencia.
-- BL-077 Crear listado de incidencias.
+- BL-073 [Hecho] Crear aplicación `incidencias`.
+- BL-074 [Hecho] Crear modelo `Incidencia`.
+- BL-075 [Hecho] Crear modelo `ComentarioIncidencia`.
+- BL-076 [Hecho] Crear formulario de incidencia.
+- BL-077 [Hecho] Crear listado de incidencias.
 
 ---
 
@@ -273,9 +280,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-078 Cambiar estado de incidencia.
-- BL-079 Registrar solución.
-- BL-080 Cerrar incidencia.
+- BL-078 [Hecho] Cambiar estado de incidencia.
+- BL-079 [Hecho] Registrar solución.
+- BL-080 [Hecho] Cerrar incidencia.
 
 ---
 
@@ -289,10 +296,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-081 Crear aplicación `mantenimiento`.
-- BL-082 Crear modelo `Mantenimiento`.
-- BL-083 Crear formulario de mantenimiento.
-- BL-084 Crear histórico de mantenimiento.
+- BL-081 [Hecho] Crear aplicación `mantenimiento`.
+- BL-082 [Pendiente] Crear modelo `Mantenimiento`.
+- BL-083 [Pendiente] Crear formulario de mantenimiento.
+- BL-084 [Pendiente] Crear histórico de mantenimiento.
 
 ---
 
@@ -304,9 +311,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-085 Crear modelo `PlanMantenimiento`.
-- BL-086 Crear planificación.
-- BL-087 Generar alertas de revisión.
+- BL-085 [Pendiente] Crear modelo `PlanMantenimiento`.
+- BL-086 [Pendiente] Crear planificación.
+- BL-087 [Pendiente] Generar alertas de revisión.
 
 ---
 
@@ -320,12 +327,12 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-088 Crear aplicación `auditoria`.
-- BL-089 Crear modelo `RegistroAuditoria`.
-- BL-090 Registrar acciones de inventario.
-- BL-091 Registrar acciones de usuarios.
-- BL-092 Registrar acciones de préstamos.
-- BL-093 Crear listado de auditoría.
+- BL-088 [Hecho] Crear aplicación `auditoria`.
+- BL-089 [Hecho] Crear modelo `RegistroAuditoria`.
+- BL-090 [Hecho] Registrar acciones de inventario.
+- BL-091 [Pendiente] Registrar acciones de usuarios.
+- BL-092 [Hecho] Registrar acciones de préstamos.
+- BL-093 [Hecho] Crear listado de auditoría.
 
 ---
 
@@ -339,10 +346,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-094 Crear aplicación `informes`.
-- BL-095 Exportar CSV.
-- BL-096 Exportar Excel.
-- BL-097 Exportar PDF.
+- BL-094 [Hecho] Crear aplicación `informes`.
+- BL-095 [Pendiente] Exportar CSV.
+- BL-096 [Hecho] Exportar Excel.
+- BL-097 [Hecho] Exportar PDF.
 
 ---
 
@@ -354,10 +361,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-098 Informe de inventario.
-- BL-099 Informe de préstamos.
-- BL-100 Informe de incidencias.
-- BL-101 Informe económico.
+- BL-098 [Parcial] Informe de inventario.
+- BL-099 [Parcial] Informe de préstamos.
+- BL-100 [Parcial] Informe de incidencias.
+- BL-101 [Pendiente] Informe económico.
 
 ---
 
@@ -371,11 +378,11 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-102 Crear dashboard principal.
-- BL-103 Mostrar estadísticas de inventario.
-- BL-104 Mostrar estadísticas de préstamos.
-- BL-105 Mostrar incidencias abiertas.
-- BL-106 Mostrar mantenimientos pendientes.
+- BL-102 [Hecho] Crear dashboard principal.
+- BL-103 [Hecho] Mostrar estadísticas de inventario.
+- BL-104 [Hecho] Mostrar estadísticas de préstamos.
+- BL-105 [Hecho] Mostrar incidencias abiertas.
+- BL-106 [Pendiente] Mostrar mantenimientos pendientes.
 
 ---
 
@@ -389,11 +396,11 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-107 Configurar permisos.
-- BL-108 Configurar grupos.
-- BL-109 Configurar CSRF.
-- BL-110 Configurar validaciones.
-- BL-111 Configurar logs.
+- BL-107 [Parcial] Configurar permisos.
+- BL-108 [Pendiente] Configurar grupos.
+- BL-109 [Hecho] Configurar CSRF.
+- BL-110 [Parcial] Configurar validaciones.
+- BL-111 [Pendiente] Configurar logs.
 
 ---
 
@@ -407,12 +414,12 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-112 Crear pruebas de modelos.
-- BL-113 Crear pruebas de formularios.
-- BL-114 Crear pruebas de vistas.
-- BL-115 Crear pruebas de permisos.
-- BL-116 Crear pruebas de integración.
-- BL-117 Crear pruebas de rendimiento.
+- BL-112 [Pendiente] Crear pruebas de modelos.
+- BL-113 [Pendiente] Crear pruebas de formularios.
+- BL-114 [Pendiente] Crear pruebas de vistas.
+- BL-115 [Pendiente] Crear pruebas de permisos.
+- BL-116 [Pendiente] Crear pruebas de integración.
+- BL-117 [Pendiente] Crear pruebas de rendimiento.
 
 ---
 
@@ -426,11 +433,11 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-118 Actualizar `README.md`.
-- BL-119 Documentar instalación.
-- BL-120 Documentar despliegue.
-- BL-121 Documentar base de datos.
-- BL-122 Documentar API futura.
+- BL-118 [Pendiente] Actualizar `README.md`.
+- BL-119 [Pendiente] Documentar instalación.
+- BL-120 [Pendiente] Documentar despliegue.
+- BL-121 [Pendiente] Documentar base de datos.
+- BL-122 [Pendiente] Documentar API futura.
 
 ---
 

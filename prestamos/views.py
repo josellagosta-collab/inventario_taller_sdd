@@ -17,6 +17,7 @@ from django.db.models import Q
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
+from auditoria.services import registrar_accion
 
 @login_required
 def crear_prestamo(request):
@@ -41,6 +42,12 @@ def crear_prestamo(request):
                 usuario=request.user if request.user.is_authenticated else None,
                 descripcion=f"Préstamo registrado. Préstamo ID: {prestamo.id}"
         )
+            registrar_accion(
+                request,
+                "prestar",
+                f"Préstamo registrado. Préstamo ID: {prestamo.id}",
+                prestamo
+            )
           
 
             return redirect("prestamos:lista_prestamos")
@@ -129,6 +136,13 @@ def devolver_prestamo(request, prestamo_id):
                 usuario=request.user if request.user.is_authenticated else None,
                 descripcion=f"Devolución registrada. Préstamo ID: {prestamo.id}"
             )
+
+        registrar_accion(
+            request,
+            "devolver",
+            f"Devolución registrada. Préstamo ID: {prestamo.id}",
+            prestamo
+        )
 
         return redirect("prestamos:lista_prestamos")
     
@@ -370,6 +384,12 @@ def crear_reserva(request):
                 usuario=request.user if request.user.is_authenticated else None,
                 descripcion=f"Reserva creada. Reserva ID: {reserva.id}"
             )
+            registrar_accion(
+                request,
+                "reservar",
+                f"Reserva creada. Reserva ID: {reserva.id}",
+                reserva
+            )
 
             return redirect("prestamos:lista_reservas")
 
@@ -442,6 +462,12 @@ def cancelar_reserva(request, reserva_id):
             usuario=request.user if request.user.is_authenticated else None,
             descripcion=f"Reserva cancelada. Reserva ID: {reserva.id}"
         )
+        registrar_accion(
+            request,
+            "cancelar_reserva",
+            f"Reserva cancelada. Reserva ID: {reserva.id}",
+            reserva
+        )
 
         return redirect("prestamos:lista_reservas")
 
@@ -480,6 +506,12 @@ def convertir_reserva_en_prestamo(request, reserva_id):
             tipo="prestamo",
             usuario=request.user if request.user.is_authenticated else None,
             descripcion=f"Reserva convertida en préstamo. Reserva ID: {reserva.id}. Préstamo ID: {prestamo.id}"
+        )
+        registrar_accion(
+            request,
+            "convertir_reserva",
+            f"Reserva convertida en préstamo. Reserva ID: {reserva.id}. Préstamo ID: {prestamo.id}",
+            reserva
         )
 
         return redirect("prestamos:detalle_prestamo", prestamo_id=prestamo.id)
@@ -700,6 +732,12 @@ def actualizar_reservas_caducadas(request):
             usuario=request.user if request.user.is_authenticated else None,
             descripcion=f"Reserva caducada automáticamente. Reserva ID: {reserva.id}"
         )
+        registrar_accion(
+            request,
+            "cancelar_reserva",
+            f"Reserva caducada automáticamente. Reserva ID: {reserva.id}",
+            reserva
+        )
 
     return redirect("prestamos:lista_reservas")
 
@@ -723,6 +761,12 @@ def crear_reserva_material(request, material_id):
                 tipo="edicion",
                 usuario=request.user if request.user.is_authenticated else None,
                 descripcion=f"Reserva creada desde material. Reserva ID: {reserva.id}"
+            )
+            registrar_accion(
+                request,
+                "reservar",
+                f"Reserva creada desde material. Reserva ID: {reserva.id}",
+                reserva
             )
 
             return redirect("prestamos:detalle_reserva", reserva_id=reserva.id)
