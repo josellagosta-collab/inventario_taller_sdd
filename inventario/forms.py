@@ -49,3 +49,32 @@ class MaterialForm(forms.ModelForm):
                 )
             ):
                 campo.widget.attrs["class"] = "form-select"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        categoria = cleaned_data.get("categoria")
+        subcategoria = cleaned_data.get("subcategoria")
+        fecha_compra = cleaned_data.get("fecha_compra")
+        garantia_hasta = cleaned_data.get("garantia_hasta")
+        cantidad = cleaned_data.get("cantidad")
+        stock_minimo = cleaned_data.get("stock_minimo")
+
+        if cantidad is not None and cantidad < 0:
+            self.add_error("cantidad", "La cantidad no puede ser negativa.")
+
+        if stock_minimo is not None and stock_minimo < 0:
+            self.add_error("stock_minimo", "El stock mínimo no puede ser negativo.")
+
+        if subcategoria and categoria and subcategoria.categoria_id != categoria.id:
+            self.add_error(
+                "subcategoria",
+                "La subcategoría seleccionada no pertenece a la categoría indicada."
+            )
+
+        if fecha_compra and garantia_hasta and garantia_hasta < fecha_compra:
+            self.add_error(
+                "garantia_hasta",
+                "La fecha de garantía no puede ser anterior a la fecha de compra."
+            )
+
+        return cleaned_data

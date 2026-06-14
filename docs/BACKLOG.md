@@ -403,7 +403,7 @@ Preparar el entorno de desarrollo.
 - BL-107 [Parcial] Configurar permisos.
 - BL-108 [Hecho] Configurar grupos.
 - BL-109 [Hecho] Configurar CSRF.
-- BL-110 [Parcial] Configurar validaciones.
+- BL-110 [Hecho] Configurar validaciones.
 - BL-111 [Pendiente] Configurar logs.
 
 ---

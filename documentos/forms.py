@@ -33,3 +33,11 @@ class DocumentoForm(forms.ModelForm):
                 )
             ):
                 campo.widget.attrs["class"] = "form-select"
+
+    def clean_archivo(self):
+        archivo = self.cleaned_data["archivo"]
+
+        if archivo.size == 0:
+            raise forms.ValidationError("El archivo no puede estar vacío.")
+
+        return archivo

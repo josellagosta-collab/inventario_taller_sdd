@@ -1,52 +1,45 @@
 from django import forms
-from .models import Prestamo, LineaPrestamo
+from django.utils import timezone
+
 from inventario.models import Material
-from .models import Reserva
-from inventario.models import Material
+
+from .models import LineaPrestamo, Prestamo, Reserva
+
 
 class PrestamoForm(forms.ModelForm):
 
     class Meta:
         model = Prestamo
-
         fields = [
             "usuario_receptor",
             "profesor_responsable",
             "fecha_prevista_devolucion",
             "observaciones",
         ]
-
         widgets = {
-            "fecha_prevista_devolucion": forms.DateInput(
-                attrs={"type": "date"}
-            ),
-            "observaciones": forms.Textarea(
-                attrs={"rows": 3}
-            ),
+            "fecha_prevista_devolucion": forms.DateInput(attrs={"type": "date"}),
+            "observaciones": forms.Textarea(attrs={"rows": 3}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        aplicar_clases_bootstrap(self.fields)
 
-        for campo in self.fields.values():
-            campo.widget.attrs["class"] = "form-control"
+    def clean_fecha_prevista_devolucion(self):
+        fecha = self.cleaned_data["fecha_prevista_devolucion"]
 
-        for nombre, campo in self.fields.items():
-            if isinstance(
-                campo.widget,
-                (
-                    forms.Select,
-                    forms.SelectMultiple
-                )
-            ):
-                campo.widget.attrs["class"] = "form-select"
+        if fecha < timezone.now().date():
+            raise forms.ValidationError(
+                "La fecha prevista de devolución no puede ser anterior a hoy."
+            )
+
+        return fecha
 
 
 class LineaPrestamoForm(forms.ModelForm):
 
     class Meta:
         model = LineaPrestamo
-
         fields = [
             "material",
             "cantidad",
@@ -54,23 +47,10 @@ class LineaPrestamoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.fields["material"].queryset = Material.objects.filter(
             estado="disponible"
         )
-
-        for campo in self.fields.values():
-            campo.widget.attrs["class"] = "form-control"
-
-        for nombre, campo in self.fields.items():
-            if isinstance(
-                campo.widget,
-                (
-                    forms.Select,
-                    forms.SelectMultiple
-                )
-            ):
-                campo.widget.attrs["class"] = "form-select"
+        aplicar_clases_bootstrap(self.fields)
 
     def clean_material(self):
         material = self.cleaned_data["material"]
@@ -81,12 +61,28 @@ class LineaPrestamoForm(forms.ModelForm):
             )
 
         return material
-    
+
+    def clean(self):
+        cleaned_data = super().clean()
+        material = cleaned_data.get("material")
+        cantidad = cleaned_data.get("cantidad")
+
+        if cantidad is not None and cantidad <= 0:
+            self.add_error("cantidad", "La cantidad debe ser mayor que cero.")
+
+        if material and cantidad and cantidad > material.cantidad:
+            self.add_error(
+                "cantidad",
+                "No puedes prestar una cantidad superior a la disponible."
+            )
+
+        return cleaned_data
+
+
 class ReservaForm(forms.ModelForm):
 
     class Meta:
         model = Reserva
-
         fields = [
             "usuario_reserva",
             "profesor_responsable",
@@ -95,7 +91,6 @@ class ReservaForm(forms.ModelForm):
             "fecha_prevista_recogida",
             "observaciones",
         ]
-
         widgets = {
             "fecha_prevista_recogida": forms.DateInput(attrs={"type": "date"}),
             "observaciones": forms.Textarea(attrs={"rows": 3}),
@@ -103,23 +98,48 @@ class ReservaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.fields["material"].queryset = Material.objects.filter(
             estado="disponible"
         )
+        aplicar_clases_bootstrap(self.fields)
 
-        for campo in self.fields.values():
-            campo.widget.attrs["class"] = "form-control"
+    def clean_fecha_prevista_recogida(self):
+        fecha = self.cleaned_data["fecha_prevista_recogida"]
 
-        for nombre, campo in self.fields.items():
-            if isinstance(campo.widget, (forms.Select, forms.SelectMultiple)):
-                campo.widget.attrs["class"] = "form-select"
-                
+        if fecha < timezone.now().date():
+            raise forms.ValidationError(
+                "La fecha prevista de recogida no puede ser anterior a hoy."
+            )
+
+        return fecha
+
+    def clean(self):
+        cleaned_data = super().clean()
+        material = cleaned_data.get("material")
+        cantidad = cleaned_data.get("cantidad")
+
+        if cantidad is not None and cantidad <= 0:
+            self.add_error("cantidad", "La cantidad debe ser mayor que cero.")
+
+        if material and material.estado != "disponible":
+            self.add_error(
+                "material",
+                "Este material no está disponible para reserva."
+            )
+
+        if material and cantidad and cantidad > material.cantidad:
+            self.add_error(
+                "cantidad",
+                "No puedes reservar una cantidad superior a la disponible."
+            )
+
+        return cleaned_data
+
+
 class ReservaMaterialForm(forms.ModelForm):
 
     class Meta:
         model = Reserva
-
         fields = [
             "usuario_reserva",
             "profesor_responsable",
@@ -127,7 +147,6 @@ class ReservaMaterialForm(forms.ModelForm):
             "fecha_prevista_recogida",
             "observaciones",
         ]
-
         widgets = {
             "fecha_prevista_recogida": forms.DateInput(attrs={"type": "date"}),
             "observaciones": forms.Textarea(attrs={"rows": 3}),
@@ -135,10 +154,32 @@ class ReservaMaterialForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        aplicar_clases_bootstrap(self.fields)
 
-        for campo in self.fields.values():
-            campo.widget.attrs["class"] = "form-control"
+    def clean_fecha_prevista_recogida(self):
+        fecha = self.cleaned_data["fecha_prevista_recogida"]
 
-        for nombre, campo in self.fields.items():
-            if isinstance(campo.widget, (forms.Select, forms.SelectMultiple)):
-                campo.widget.attrs["class"] = "form-select"
+        if fecha < timezone.now().date():
+            raise forms.ValidationError(
+                "La fecha prevista de recogida no puede ser anterior a hoy."
+            )
+
+        return fecha
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cantidad = cleaned_data.get("cantidad")
+
+        if cantidad is not None and cantidad <= 0:
+            self.add_error("cantidad", "La cantidad debe ser mayor que cero.")
+
+        return cleaned_data
+
+
+def aplicar_clases_bootstrap(fields):
+    for campo in fields.values():
+        campo.widget.attrs["class"] = "form-control"
+
+    for campo in fields.values():
+        if isinstance(campo.widget, (forms.Select, forms.SelectMultiple)):
+            campo.widget.attrs["class"] = "form-select"
