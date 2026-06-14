@@ -11,6 +11,7 @@ from auditoria.services import registrar_accion
 
 from .decorators import pertenece_a_grupo
 from .forms import RolForm, UsuarioCrearForm, UsuarioEditarForm, UsuarioPasswordForm
+from .models import PerfilUsuario
 
 
 security_logger = logging.getLogger("seguridad")
@@ -20,7 +21,7 @@ ROLES_PROTEGIDOS = ["Administradores"]
 @login_required
 @pertenece_a_grupo("Administradores")
 def lista_usuarios(request):
-    usuarios = User.objects.prefetch_related("groups").order_by("username")
+    usuarios = User.objects.select_related("perfil").prefetch_related("groups").order_by("username")
 
     busqueda = request.GET.get("busqueda", "")
     estado = request.GET.get("estado", "")
@@ -30,7 +31,9 @@ def lista_usuarios(request):
             Q(username__icontains=busqueda) |
             Q(email__icontains=busqueda) |
             Q(first_name__icontains=busqueda) |
-            Q(last_name__icontains=busqueda)
+            Q(last_name__icontains=busqueda) |
+            Q(perfil__departamento__icontains=busqueda) |
+            Q(perfil__telefono__icontains=busqueda)
         )
 
     if estado == "activos":
@@ -42,6 +45,8 @@ def lista_usuarios(request):
     pagina_usuarios = paginator.get_page(request.GET.get("page"))
 
     for usuario in pagina_usuarios:
+        perfil, _ = PerfilUsuario.objects.get_or_create(user=usuario)
+        usuario.perfil_usuario = perfil
         usuario.es_administrador = (
             usuario.is_superuser or
             usuario.groups.filter(name="Administradores").exists()

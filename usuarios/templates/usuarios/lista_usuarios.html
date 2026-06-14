@@ -71,6 +71,9 @@ Usuarios
                 <th>Usuario</th>
                 <th>Nombre</th>
                 <th>Email</th>
+                <th>Tipo</th>
+                <th>Departamento</th>
+                <th>Préstamos</th>
                 <th>Activo</th>
                 <th>Administrador</th>
                 <th>Acciones</th>
@@ -83,6 +86,15 @@ Usuarios
                     <td>{{ usuario.username }}</td>
                     <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
                     <td>{{ usuario.email|default:"-" }}</td>
+                    <td>{{ usuario.perfil_usuario.get_tipo_usuario_display }}</td>
+                    <td>{{ usuario.perfil_usuario.departamento|default:"-" }}</td>
+                    <td>
+                        {% if usuario.perfil_usuario.puede_recibir_prestamos %}
+                            <span class="badge bg-success">Sí</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if usuario.is_active %}
                             <span class="badge bg-success">Sí</span>
@@ -120,7 +132,7 @@ Usuarios
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center">
+                    <td colspan="9" class="text-center">
                         No hay usuarios registrados.
                     </td>
                 </tr>

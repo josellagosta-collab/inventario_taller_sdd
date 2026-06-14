@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import Group, Permission, User
 
+from .models import PerfilUsuario
+
 
 class UsuarioCrearForm(forms.ModelForm):
     password1 = forms.CharField(
@@ -15,6 +17,30 @@ class UsuarioCrearForm(forms.ModelForm):
     es_administrador = forms.BooleanField(
         label="Pertenece al grupo Administradores",
         required=False,
+    )
+    tipo_usuario = forms.ChoiceField(
+        label="Tipo de usuario",
+        choices=PerfilUsuario.TIPOS_USUARIO,
+    )
+    departamento = forms.CharField(
+        label="Departamento",
+        required=False,
+        max_length=120,
+    )
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        max_length=30,
+    )
+    puede_recibir_prestamos = forms.BooleanField(
+        label="Puede recibir préstamos",
+        required=False,
+        initial=True,
+    )
+    observaciones = forms.CharField(
+        label="Observaciones",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
     )
 
     class Meta:
@@ -51,6 +77,7 @@ class UsuarioCrearForm(forms.ModelForm):
                 usuario,
                 self.cleaned_data.get("es_administrador")
             )
+            guardar_perfil_usuario(usuario, self.cleaned_data)
 
         return usuario
 
@@ -59,6 +86,29 @@ class UsuarioEditarForm(forms.ModelForm):
     es_administrador = forms.BooleanField(
         label="Pertenece al grupo Administradores",
         required=False,
+    )
+    tipo_usuario = forms.ChoiceField(
+        label="Tipo de usuario",
+        choices=PerfilUsuario.TIPOS_USUARIO,
+    )
+    departamento = forms.CharField(
+        label="Departamento",
+        required=False,
+        max_length=120,
+    )
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        max_length=30,
+    )
+    puede_recibir_prestamos = forms.BooleanField(
+        label="Puede recibir préstamos",
+        required=False,
+    )
+    observaciones = forms.CharField(
+        label="Observaciones",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
     )
 
     class Meta:
@@ -77,6 +127,12 @@ class UsuarioEditarForm(forms.ModelForm):
             self.fields["es_administrador"].initial = self.instance.groups.filter(
                 name="Administradores"
             ).exists()
+            perfil, _ = PerfilUsuario.objects.get_or_create(user=self.instance)
+            self.fields["tipo_usuario"].initial = perfil.tipo_usuario
+            self.fields["departamento"].initial = perfil.departamento
+            self.fields["telefono"].initial = perfil.telefono
+            self.fields["puede_recibir_prestamos"].initial = perfil.puede_recibir_prestamos
+            self.fields["observaciones"].initial = perfil.observaciones
 
         aplicar_clases_bootstrap(self.fields)
 
@@ -88,6 +144,7 @@ class UsuarioEditarForm(forms.ModelForm):
                 usuario,
                 self.cleaned_data.get("es_administrador")
             )
+            guardar_perfil_usuario(usuario, self.cleaned_data)
 
         return usuario
 
@@ -132,6 +189,16 @@ def actualizar_grupo_administradores(usuario, es_administrador):
         usuario.groups.add(grupo)
     else:
         usuario.groups.remove(grupo)
+
+
+def guardar_perfil_usuario(usuario, cleaned_data):
+    perfil, _ = PerfilUsuario.objects.get_or_create(user=usuario)
+    perfil.tipo_usuario = cleaned_data.get("tipo_usuario")
+    perfil.departamento = cleaned_data.get("departamento", "")
+    perfil.telefono = cleaned_data.get("telefono", "")
+    perfil.puede_recibir_prestamos = cleaned_data.get("puede_recibir_prestamos", False)
+    perfil.observaciones = cleaned_data.get("observaciones", "")
+    perfil.save()
 
 
 def aplicar_clases_bootstrap(fields):

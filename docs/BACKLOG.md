@@ -67,8 +67,8 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-016 [Pendiente] Crear modelo `PerfilUsuario`.
-- BL-017 [Pendiente] Crear modelo `Rol`.
+- BL-016 [Hecho] Crear modelo `PerfilUsuario`.
+- BL-017 [Hecho] Crear modelo `Rol` resuelto mediante `Group` de Django.
 - BL-018 [Hecho] Crear CRUD de usuarios.
 - BL-019 [Hecho] Crear CRUD de roles.
 - BL-020 [Hecho] Implementar permisos.
