@@ -1,6 +1,6 @@
 # Sincronización manual con Jira
 
-Este proyecto incluye un comando de Django para sincronizar `docs/BACKLOG.md` con Jira Cloud de forma manual.
+Este proyecto incluye un comando de Django para sincronizar `docs/BACKLOG.md` con Jira Cloud de forma manual e incremental.
 
 ## Variables de entorno
 
@@ -25,32 +25,57 @@ $env:JIRA_STATUS_DONE="Done"
 $env:JIRA_STATUS_REVIEW="In Review"
 ```
 
-## Previsualizar
+## Archivos locales
 
-```powershell
-.\.venv\Scripts\python.exe manage.py sync_backlog_jira
-```
-
-No llama a Jira. Solo muestra qué elementos detecta.
-
-## Sincronizar
-
-```powershell
-.\.venv\Scripts\python.exe manage.py sync_backlog_jira --apply
-```
-
-El comando crea o actualiza issues y guarda el vínculo local en:
+El comando usa dos archivos:
 
 ```text
 docs/jira_sync_map.json
+docs/jira_sync_state.json
 ```
 
-Ese archivo evita duplicar issues en futuras sincronizaciones.
+`jira_sync_map.json` relaciona cada `BL-*` con su issue de Jira.
 
-## Sincronizar solo tareas BL
+`jira_sync_state.json` guarda la última versión sincronizada de cada elemento. Gracias a este archivo, las siguientes sincronizaciones solo envían a Jira lo que ha cambiado.
+
+## Inicializar sincronización incremental
+
+Si ya tienes Jira sincronizado y quieres evitar que el comando vuelva a actualizar las 122 tareas una por una, ejecuta una vez:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py sync_backlog_jira --tasks-only --init-state
+```
+
+Esto no llama a Jira. Solo crea o actualiza `docs/jira_sync_state.json` tomando el backlog actual como punto de partida.
+
+## Previsualizar cambios
+
+```powershell
+.\.venv\Scripts\python.exe manage.py sync_backlog_jira --tasks-only
+```
+
+No llama a Jira. Muestra únicamente las tareas nuevas o modificadas.
+
+Para ver también las tareas sin cambios:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py sync_backlog_jira --tasks-only --show-all
+```
+
+## Sincronizar solo cambios
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py sync_backlog_jira --tasks-only --apply
+```
+
+El comando solo crea o actualiza los elementos que hayan cambiado respecto a `docs/jira_sync_state.json`.
+
+## Forzar sincronización completa
+
+Si necesitas reenviar todo a Jira:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py sync_backlog_jira --tasks-only --apply --force
 ```
 
 ## Notas

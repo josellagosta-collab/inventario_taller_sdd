@@ -28,6 +28,7 @@ urlpatterns = [
     path("", include("incidencias.urls")),
     path("", include("informes.urls")),
     path("", include("auditoria.urls")),
+    path("", include("ubicaciones.urls")),
 ]
 
 if settings.DEBUG:

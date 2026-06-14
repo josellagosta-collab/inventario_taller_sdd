@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import json
 import os
 import re
@@ -68,7 +69,7 @@ class JiraClient:
 
 
 class Command(BaseCommand):
-    help = "Sincroniza docs/BACKLOG.md con Jira de forma manual."
+    help = "Sincroniza docs/BACKLOG.md con Jira de forma manual e incremental."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -82,6 +83,11 @@ class Command(BaseCommand):
             help="Ruta del archivo local que relaciona IDs del backlog con issues Jira.",
         )
         parser.add_argument(
+            "--state",
+            default=str(settings.BASE_DIR / "docs" / "jira_sync_state.json"),
+            help="Ruta del archivo local que guarda la última huella sincronizada.",
+        )
+        parser.add_argument(
             "--apply",
             action="store_true",
             help="Crea o actualiza issues en Jira. Sin este flag solo muestra un resumen.",
@@ -91,18 +97,50 @@ class Command(BaseCommand):
             action="store_true",
             help="Sincroniza solo tareas BL-* y omite épicas e historias.",
         )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Fuerza la actualización de todos los elementos aunque no hayan cambiado.",
+        )
+        parser.add_argument(
+            "--show-all",
+            action="store_true",
+            help="En previsualización muestra también elementos sin cambios.",
+        )
+        parser.add_argument(
+            "--init-state",
+            action="store_true",
+            help="Inicializa el estado local como ya sincronizado sin llamar a Jira.",
+        )
 
     def handle(self, *args, **options):
         backlog_path = Path(options["backlog"])
         map_path = Path(options["map"])
+        state_path = Path(options["state"])
         apply_changes = options["apply"]
         tasks_only = options["tasks_only"]
+        force = options["force"]
 
         items = self.parse_backlog(backlog_path, tasks_only)
-        sync_map = self.load_map(map_path)
+        sync_map = self.load_json(map_path)
+        sync_state = self.load_json(state_path)
+        changes = self.detect_changes(items, sync_map, sync_state, force)
+
+        if options["init_state"]:
+            self.save_state(state_path, items)
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Estado inicializado para {len(items)} elementos sin llamar a Jira."
+                )
+            )
+            return
 
         if not apply_changes:
-            self.print_dry_run(items, sync_map)
+            self.print_dry_run(items, sync_map, changes, options["show_all"])
+            return
+
+        if not changes:
+            self.stdout.write(self.style.SUCCESS("No hay cambios para sincronizar."))
             return
 
         client = self.build_client()
@@ -114,7 +152,8 @@ class Command(BaseCommand):
             "task": os.environ.get("JIRA_TASK_ISSUE_TYPE", "Task"),
         }
 
-        for item in items:
+        for change in changes:
+            item = change["item"]
             issue_key = sync_map.get(item["id"])
             fields = self.build_fields(project_key, issue_types[item["kind"]], item)
 
@@ -128,8 +167,10 @@ class Command(BaseCommand):
                 self.stdout.write(f"Creado {item['id']} -> {issue_key}")
 
             self.sync_transition(client, issue_key, item["status"])
+            sync_state[item["id"]] = self.fingerprint(item)
 
-        self.save_map(map_path, sync_map)
+        self.save_json(map_path, sync_map)
+        self.save_json(state_path, sync_state)
         self.stdout.write(self.style.SUCCESS("Sincronización completada."))
 
     def parse_backlog(self, backlog_path, tasks_only):
@@ -193,19 +234,33 @@ class Command(BaseCommand):
 
         return items
 
-    def print_dry_run(self, items, sync_map):
+    def print_dry_run(self, items, sync_map, changes, show_all):
         self.stdout.write("Modo previsualización. No se llamará a Jira.")
         self.stdout.write(f"Elementos detectados: {len(items)}")
+        self.stdout.write(f"Elementos con cambios: {len(changes)}")
+
+        changed_by_id = {
+            change["item"]["id"]: change
+            for change in changes
+        }
 
         for item in items:
+            change = changed_by_id.get(item["id"])
+
+            if not show_all and not change:
+                continue
+
             issue_key = sync_map.get(item["id"], "nuevo")
+            reason = change["reason"] if change else "sin cambios"
             self.stdout.write(
-                f"- {item['id']} [{item['status']}] ({item['kind']}) -> {issue_key}: "
-                f"{item['summary']}"
+                f"- {item['id']} [{item['status']}] ({item['kind']}) -> {issue_key} "
+                f"({reason}): {item['summary']}"
             )
 
         self.stdout.write("")
-        self.stdout.write("Ejecuta con --apply para sincronizar con Jira.")
+        self.stdout.write("Ejecuta con --apply para sincronizar solo esos cambios.")
+        self.stdout.write("Usa --show-all para ver también elementos sin cambios.")
+        self.stdout.write("Usa --force para volver a sincronizarlo todo.")
 
     def build_client(self):
         return JiraClient(
@@ -222,6 +277,49 @@ class Command(BaseCommand):
             "issuetype": {"name": issue_type},
             "labels": ["backlog-local", item["id"].lower()],
         }
+
+    def detect_changes(self, items, sync_map, sync_state, force):
+        changes = []
+
+        for item in items:
+            issue_key = sync_map.get(item["id"])
+            current_fingerprint = self.fingerprint(item)
+            previous_fingerprint = sync_state.get(item["id"])
+
+            if force:
+                reason = "forzado"
+            elif not issue_key:
+                reason = "nuevo"
+            elif previous_fingerprint != current_fingerprint:
+                reason = "modificado"
+            else:
+                reason = ""
+
+            if reason:
+                changes.append({
+                    "item": item,
+                    "reason": reason,
+                })
+
+        return changes
+
+    def fingerprint(self, item):
+        data = {
+            "id": item["id"],
+            "kind": item["kind"],
+            "status": item["status"],
+            "summary": item["summary"],
+            "description": item["description"],
+        }
+        raw = json.dumps(data, ensure_ascii=False, sort_keys=True)
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def save_state(self, state_path, items):
+        sync_state = {
+            item["id"]: self.fingerprint(item)
+            for item in items
+        }
+        self.save_json(state_path, sync_state)
 
     def sync_transition(self, client, issue_key, local_status):
         target = {
@@ -262,16 +360,21 @@ class Command(BaseCommand):
             "content": paragraphs,
         }
 
-    def load_map(self, map_path):
-        if not map_path.exists():
+    def load_json(self, path):
+        if not path.exists():
             return {}
 
-        return json.loads(map_path.read_text(encoding="utf-8"))
+        content = path.read_text(encoding="utf-8").strip()
 
-    def save_map(self, map_path, sync_map):
-        map_path.parent.mkdir(parents=True, exist_ok=True)
-        map_path.write_text(
-            json.dumps(sync_map, ensure_ascii=False, indent=2) + "\n",
+        if not content:
+            return {}
+
+        return json.loads(content)
+
+    def save_json(self, path, data):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
 

@@ -155,7 +155,7 @@ Preparar el entorno de desarrollo.
 - BL-042 [Hecho] Crear modelo `Estanteria`.
 - BL-043 [Hecho] Crear modelo `Caja`.
 - BL-044 [Hecho] Crear modelo `Ubicacion`.
-- BL-045 [Pendiente] Crear CRUD de ubicaciones.
+- BL-045 [Hecho] Crear CRUD de ubicaciones.
 
 ---
 

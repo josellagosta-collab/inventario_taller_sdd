@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+Eliminar ubicación
+{% endblock %}
+
+{% block content %}
+
+<h1>Eliminar ubicación</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        Confirmar eliminación
+    </div>
+
+    <div class="card-body">
+        <p>
+            ¿Seguro que quieres eliminar esta ubicación?
+        </p>
+
+        <p>
+            <strong>{{ ubicacion }}</strong>
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <button type="submit" class="btn btn-danger">
+                Eliminar ubicación
+            </button>
+
+            <a href="{% url 'ubicaciones:lista_ubicaciones' %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
