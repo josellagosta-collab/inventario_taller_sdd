@@ -18,6 +18,10 @@ security_logger = logging.getLogger("seguridad")
 ROLES_PROTEGIDOS = ["Administradores"]
 
 
+def logout_done(request):
+    return render(request, "registration/logged_out.html")
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def lista_usuarios(request):

@@ -54,7 +54,7 @@ Preparar el entorno de desarrollo.
 - BL-011 [Hecho] Crear aplicación `usuarios`.
 - BL-012 [Hecho] Configurar Django Authentication.
 - BL-013 [Hecho] Crear página de login.
-- BL-014 [Parcial] Crear página de logout.
+- BL-014 [Hecho] Crear página de logout.
 - BL-015 [Hecho] Crear recuperación de contraseña.
 
 ---

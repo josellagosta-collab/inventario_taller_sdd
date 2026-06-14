@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+Sesión cerrada
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background-color: #0051A0;">
+                Sesión cerrada
+            </div>
+
+            <div class="card-body">
+                <div class="alert alert-success">
+                    Has cerrado sesión correctamente.
+                </div>
+
+                <a href="{% url 'login' %}" class="btn btn-primary">
+                    Volver a iniciar sesión
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

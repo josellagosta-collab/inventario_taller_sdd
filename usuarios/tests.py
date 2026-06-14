@@ -99,3 +99,26 @@ class PerfilUsuarioTests(TestCase):
         self.assertEqual(perfil.departamento, "Hardware")
         self.assertEqual(perfil.telefono, "600123123")
         self.assertTrue(perfil.puede_recibir_prestamos)
+
+
+class LogoutTests(TestCase):
+    def test_logout_redirige_a_pagina_de_sesion_cerrada(self):
+        User.objects.create_user(
+            username="usuario",
+            password="testpass123",
+        )
+        self.client.login(username="usuario", password="testpass123")
+
+        response = self.client.post(reverse("logout"))
+
+        self.assertRedirects(
+            response,
+            reverse("usuarios:logout_done"),
+            fetch_redirect_response=False,
+        )
+
+    def test_pagina_logout_done_muestra_confirmacion(self):
+        response = self.client.get(reverse("usuarios:logout_done"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Has cerrado sesión correctamente.")
