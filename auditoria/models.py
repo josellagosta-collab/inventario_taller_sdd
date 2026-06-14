@@ -16,6 +16,9 @@ class RegistroAuditoria(models.Model):
         ("convertir_reserva", "Convertir reserva"),
         ("exportar", "Exportar"),
         ("acceder", "Acceder"),
+        ("iniciar_sesion", "Iniciar sesión"),
+        ("cerrar_sesion", "Cerrar sesión"),
+        ("login_fallido", "Login fallido"),
         ("otro", "Otro"),
     ]
 

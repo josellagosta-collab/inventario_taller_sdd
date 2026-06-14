@@ -14,6 +14,10 @@
 - **Pendiente:** no se aprecia implementación todavía.
 - **Por revisar:** necesita validación manual o decisión de alcance.
 
+## Cambios aceptados
+
+- **2026-06-14:** Navegación superior simplificada y menú lateral izquierdo aceptados por ahora. La cabecera queda reservada para Dashboard, Administración, usuario autenticado y cierre de sesión. El resto de accesos se agrupan en menú lateral por módulos.
+
 ---
 
 # EP001 - Configuración inicial del proyecto
@@ -24,12 +28,12 @@ Preparar el entorno de desarrollo.
 
 ## Tareas
 
-- BL-001 [Por revisar] Crear repositorio GitHub.
-- BL-002 [Por revisar] Crear proyecto Jira.
+- BL-001 [Hecho] Crear repositorio GitHub.
+- BL-002 [Hecho] Crear proyecto Jira.
 - BL-003 [Hecho] Crear entorno virtual Python.
-- BL-004 [Por revisar] Configurar VS Code.
+- BL-004 [Hecho] Configurar VS Code.
 - BL-005 [Hecho] Instalar Django.
-- BL-006 [Por revisar] Instalar PostgreSQL.
+- BL-006 [Hecho] Instalar PostgreSQL.
 - BL-007 [Hecho] Configurar conexión PostgreSQL.
 - BL-008 [Hecho] Crear archivo `requirements.txt`.
 - BL-009 [Hecho] Configurar Git.
@@ -330,7 +334,7 @@ Preparar el entorno de desarrollo.
 - BL-088 [Hecho] Crear aplicación `auditoria`.
 - BL-089 [Hecho] Crear modelo `RegistroAuditoria`.
 - BL-090 [Hecho] Registrar acciones de inventario.
-- BL-091 [Pendiente] Registrar acciones de usuarios.
+- BL-091 [Hecho] Registrar acciones de usuarios.
 - BL-092 [Hecho] Registrar acciones de préstamos.
 - BL-093 [Hecho] Crear listado de auditoría.
 
