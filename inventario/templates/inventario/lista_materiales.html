@@ -15,12 +15,12 @@ Listado de materiales
         Añadir material
     </a>
 
-    <a href="{% url 'inventario:exportar_materiales_excel' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}"
+    <a href="{% url 'inventario:exportar_materiales_excel' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}"
        class="btn btn-success">
         Exportar Excel
     </a>
 
-    <a href="{% url 'inventario:exportar_materiales_pdf' %}"
+    <a href="{% url 'inventario:exportar_materiales_pdf' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}"
        class="btn btn-danger">
         Exportar PDF
     </a>
@@ -74,15 +74,41 @@ Listado de materiales
             </select>
         </div>
 
-        <div class="col-md-2 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">
-                Filtrar
-            </button>
+        <div class="col-md-2">
+            <label class="form-label">Reserva activa</label>
+            <select name="con_reserva" class="form-select">
+                <option value="">Todos</option>
+                <option value="1"
+                    {% if con_reserva == "1" %}
+                        selected
+                    {% endif %}
+                >
+                    Solo reservados
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-2 mt-3">
+            <label class="form-label">Stock bajo</label>
+            <select name="stock_bajo" class="form-select">
+                <option value="">Todos</option>
+                <option value="1"
+                    {% if stock_bajo == "1" %}
+                        selected
+                    {% endif %}
+                >
+                    Solo stock bajo
+                </option>
+            </select>
         </div>
 
     </div>
 
-    <div class="mt-3">
+    <div class="mt-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            Filtrar
+        </button>
+
         <a href="{% url 'inventario:lista_materiales' %}"
            class="btn btn-secondary">
             Limpiar filtros
@@ -123,11 +149,8 @@ Listado de materiales
                     </td>
 
                     <td>{{ material.categoria }}</td>
-
                     <td>{{ material.marca }}</td>
-
                     <td>{{ material.modelo }}</td>
-
                     <td>{{ material.get_estado_display }}</td>
 
                     <td>
@@ -145,24 +168,16 @@ Listado de materiales
                     </td>
 
                     <td>
-                        {% with hay_reservas=False %}
-
-                            {% for reserva in material.reservas.all %}
-
-                                {% if reserva.estado == "activa" %}
-                                    <a href="{% url 'prestamos:detalle_reserva' reserva.id %}"
-                                       class="badge bg-primary text-decoration-none">
-                                        Reserva #{{ reserva.id }}
-                                    </a>
-                                {% endif %}
-
-                            {% empty %}
-
-                                <span class="text-muted">-</span>
-
-                            {% endfor %}
-
-                        {% endwith %}
+                        {% for reserva in material.reservas.all %}
+                            {% if reserva.estado == "activa" %}
+                                <a href="{% url 'prestamos:detalle_reserva' reserva.id %}"
+                                   class="badge bg-primary text-decoration-none">
+                                    Reserva #{{ reserva.id }}
+                                </a>
+                            {% endif %}
+                        {% empty %}
+                            <span class="text-muted">-</span>
+                        {% endfor %}
                     </td>
                 </tr>
 
@@ -190,14 +205,14 @@ Listado de materiales
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page=1&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                   href="?page=1&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}">
                     Primera
                 </a>
             </li>
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page={{ materiales.previous_page_number }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                   href="?page={{ materiales.previous_page_number }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}">
                     Anterior
                 </a>
             </li>
@@ -214,14 +229,14 @@ Listado de materiales
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page={{ materiales.next_page_number }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                   href="?page={{ materiales.next_page_number }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}">
                     Siguiente
                 </a>
             </li>
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page={{ materiales.paginator.num_pages }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}">
+                   href="?page={{ materiales.paginator.num_pages }}&busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}">
                     Última
                 </a>
             </li>

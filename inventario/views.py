@@ -34,12 +34,18 @@ from prestamos.models import Prestamo, Reserva
 @login_required
 def lista_materiales(request):
     materiales = Material.objects.annotate(
-        total_documentos=Count("documentos"))
+        total_documentos=Count("documentos", distinct=True)
+    ).prefetch_related(
+        "reservas"
+    )
+
     categorias = Categoria.objects.all()
 
     busqueda = request.GET.get("busqueda", "")
     categoria_id = request.GET.get("categoria", "")
     estado = request.GET.get("estado", "")
+    con_reserva = request.GET.get("con_reserva", "")
+    stock_bajo = request.GET.get("stock_bajo", "")
 
     if busqueda:
         materiales = materiales.filter(
@@ -56,6 +62,16 @@ def lista_materiales(request):
     if estado:
         materiales = materiales.filter(estado=estado)
 
+    if con_reserva == "1":
+        materiales = materiales.filter(
+            reservas__estado="activa"
+        ).distinct()
+        
+    if stock_bajo == "1":
+        materiales = materiales.filter(
+            cantidad__lte=F("stock_minimo")
+        )
+
     paginator = Paginator(materiales, 10)
     numero_pagina = request.GET.get("page")
     pagina_materiales = paginator.get_page(numero_pagina)
@@ -67,8 +83,9 @@ def lista_materiales(request):
         "categoria_id": categoria_id,
         "estado": estado,
         "estados": Material.ESTADOS,
+        "con_reserva": con_reserva,
+        "stock_bajo": stock_bajo,
     })
-
 
 @login_required
 def detalle_material(request, material_id):
@@ -331,6 +348,9 @@ def exportar_materiales_excel(request):
     busqueda = request.GET.get("busqueda", "")
     categoria_id = request.GET.get("categoria", "")
     estado = request.GET.get("estado", "")
+    con_reserva = request.GET.get("con_reserva", "")
+    stock_bajo = request.GET.get("stock_bajo", "")
+   
 
     if busqueda:
         materiales = materiales.filter(
@@ -346,6 +366,16 @@ def exportar_materiales_excel(request):
 
     if estado:
         materiales = materiales.filter(estado=estado)
+        
+    if con_reserva == "1":
+        materiales = materiales.filter(
+            reservas__estado="activa"
+        ).distinct()
+        
+    if stock_bajo == "1":
+        materiales = materiales.filter(
+            cantidad__lte=F("stock_minimo")
+        )
 
     fila = 2
 
@@ -455,6 +485,37 @@ def exportar_materiales_pdf(request):
     ]
 
     materiales = Material.objects.select_related("categoria").all()
+
+    busqueda = request.GET.get("busqueda", "")
+    categoria_id = request.GET.get("categoria", "")
+    estado = request.GET.get("estado", "")
+    con_reserva = request.GET.get("con_reserva", "")
+    stock_bajo = request.GET.get("stock_bajo", "")
+
+    if busqueda:
+        materiales = materiales.filter(
+            Q(nombre__icontains=busqueda) |
+            Q(codigo_inventario__icontains=busqueda) |
+            Q(marca__icontains=busqueda) |
+            Q(modelo__icontains=busqueda) |
+            Q(numero_serie__icontains=busqueda)
+        )
+
+    if categoria_id:
+        materiales = materiales.filter(categoria_id=categoria_id)
+
+    if estado:
+        materiales = materiales.filter(estado=estado)
+
+    if con_reserva == "1":
+        materiales = materiales.filter(
+            reservas__estado="activa"
+        ).distinct()
+        
+    if stock_bajo == "1":
+        materiales = materiales.filter(
+            cantidad__lte=F("stock_minimo")
+        )
 
     for material in materiales:
         datos.append([
