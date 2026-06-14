@@ -91,7 +91,7 @@ Preparar el entorno de desarrollo.
 - BL-024 [Hecho] Crear modelo `Proveedor`.
 - BL-025 [Hecho] Crear modelo `Material`.
 - BL-026 [Hecho] Crear migraciones.
-- BL-027 [Por revisar] Aplicar migraciones.
+- BL-027 [Hecho] Aplicar migraciones.
 
 ---
 
