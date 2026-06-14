@@ -119,7 +119,7 @@ Preparar el entorno de desarrollo.
 ### Tareas
 
 - BL-032 [Hecho] Crear formulario de edición.
-- BL-033 [Parcial] Validar datos.
+- BL-033 [Hecho] Validar datos.
 - BL-034 [Parcial] Registrar auditoría.
 
 ---

@@ -1,6 +1,8 @@
 from django.db import models
 from ubicaciones.models import Ubicacion
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 class Categoria(models.Model):
@@ -132,6 +134,43 @@ class Material(models.Model):
 
     def __str__(self):
         return f"{self.codigo_inventario} - {self.nombre}"
+
+    def clean(self):
+        errores = {}
+        hoy = timezone.now().date()
+
+        if self.codigo_inventario:
+            self.codigo_inventario = self.codigo_inventario.strip()
+
+        if self.nombre:
+            self.nombre = self.nombre.strip()
+
+        if self.numero_serie:
+            self.numero_serie = self.numero_serie.strip()
+
+        if self.precio_compra is not None and self.precio_compra < 0:
+            errores["precio_compra"] = "El precio de compra no puede ser negativo."
+
+        if self.fecha_compra and self.fecha_compra > hoy:
+            errores["fecha_compra"] = "La fecha de compra no puede ser futura."
+
+        if self.fecha_compra and self.garantia_hasta and self.garantia_hasta < self.fecha_compra:
+            errores["garantia_hasta"] = (
+                "La fecha de garantía no puede ser anterior a la fecha de compra."
+            )
+
+        if self.subcategoria and self.categoria_id and self.subcategoria.categoria_id != self.categoria_id:
+            errores["subcategoria"] = (
+                "La subcategoría seleccionada no pertenece a la categoría indicada."
+            )
+
+        if self.cantidad == 0 and self.estado in ["disponible", "reservado", "prestado"]:
+            errores["cantidad"] = (
+                "La cantidad debe ser mayor que cero para materiales disponibles, reservados o prestados."
+            )
+
+        if errores:
+            raise ValidationError(errores)
     
 from django.contrib.auth.models import User
 
