@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}
+Roles
+{% endblock %}
+
+{% block content %}
+
+<h1>Roles</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="d-flex gap-2 mb-3">
+    <a href="{% url 'usuarios:crear_rol' %}"
+       class="btn btn-success">
+        Nuevo rol
+    </a>
+</div>
+
+<form method="get" class="card card-body mb-4">
+    <div class="row">
+        <div class="col-md-8">
+            <label class="form-label">
+                Buscar
+            </label>
+            <input type="text"
+                   name="busqueda"
+                   class="form-control"
+                   placeholder="Nombre del rol"
+                   value="{{ busqueda }}">
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary">
+                Filtrar
+            </button>
+
+            <a href="{% url 'usuarios:lista_roles' %}"
+               class="btn btn-secondary">
+                Limpiar
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Rol</th>
+                <th>Usuarios</th>
+                <th>Permisos</th>
+                <th>Protegido</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for rol in roles %}
+                <tr>
+                    <td>{{ rol.name }}</td>
+                    <td>{{ rol.total_usuarios }}</td>
+                    <td>{{ rol.total_permisos }}</td>
+                    <td>
+                        {% if rol.es_protegido %}
+                            <span class="badge bg-primary">Sí</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'usuarios:editar_rol' rol.id %}"
+                               class="btn btn-sm btn-primary">
+                                Editar
+                            </a>
+
+                            {% if not rol.es_protegido %}
+                                <a href="{% url 'usuarios:eliminar_rol' rol.id %}"
+                                   class="btn btn-sm btn-danger">
+                                    Eliminar
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">
+                        No hay roles registrados.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<nav aria-label="Paginación de roles">
+    <ul class="pagination">
+        {% if roles.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&busqueda={{ busqueda }}">
+                    Primera
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ roles.previous_page_number }}&busqueda={{ busqueda }}">
+                    Anterior
+                </a>
+            </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ roles.number }} de {{ roles.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if roles.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ roles.next_page_number }}&busqueda={{ busqueda }}">
+                    Siguiente
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ roles.paginator.num_pages }}&busqueda={{ busqueda }}">
+                    Última
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% endblock %}

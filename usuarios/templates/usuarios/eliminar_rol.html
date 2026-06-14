@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+Eliminar rol
+{% endblock %}
+
+{% block content %}
+
+<h1>Eliminar rol</h1>
+
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        Confirmar eliminación
+    </div>
+
+    <div class="card-body">
+        <p>
+            ¿Seguro que quieres eliminar este rol?
+        </p>
+
+        <p>
+            <strong>{{ rol.name }}</strong>
+        </p>
+
+        {% if usuarios_asignados %}
+            <div class="alert alert-warning">
+                Este rol tiene {{ usuarios_asignados }} usuario(s) asignado(s).
+                Debes reasignarlos antes de eliminarlo.
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn btn-danger"
+                    {% if usuarios_asignados %}disabled{% endif %}>
+                Eliminar rol
+            </button>
+
+            <a href="{% url 'usuarios:lista_roles' %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

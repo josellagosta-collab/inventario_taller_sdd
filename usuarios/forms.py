@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, Permission, User
 
 
 class UsuarioCrearForm(forms.ModelForm):
@@ -93,6 +93,33 @@ class UsuarioEditarForm(forms.ModelForm):
 
 
 class UsuarioPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        aplicar_clases_bootstrap(self.fields)
+
+
+class RolForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        label="Permisos",
+        queryset=Permission.objects.select_related("content_type").order_by(
+            "content_type__app_label",
+            "codename",
+        ),
+        required=False,
+        widget=forms.SelectMultiple(attrs={"size": "14"}),
+        help_text="Mantén pulsada la tecla Ctrl para seleccionar varios permisos.",
+    )
+
+    class Meta:
+        model = Group
+        fields = [
+            "name",
+            "permissions",
+        ]
+        labels = {
+            "name": "Nombre del rol",
+        }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         aplicar_clases_bootstrap(self.fields)
