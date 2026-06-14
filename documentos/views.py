@@ -5,8 +5,10 @@ from .models import Documento
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from usuarios.decorators import pertenece_a_grupo
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def subir_documento(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -33,6 +35,7 @@ def subir_documento(request, material_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def eliminar_documento(request, documento_id):
     documento = get_object_or_404(Documento, id=documento_id)
     material = documento.material

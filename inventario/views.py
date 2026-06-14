@@ -334,6 +334,7 @@ def dashboard(request):
 
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_materiales_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -446,6 +447,7 @@ def exportar_materiales_excel(request):
 
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_materiales_pdf(request):
 
     buffer = BytesIO()
@@ -581,6 +583,7 @@ def exportar_materiales_pdf(request):
 
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_movimientos_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -676,6 +679,7 @@ def exportar_movimientos_excel(request):
     return response
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_movimientos_pdf(request):
     buffer = BytesIO()
     pdf = SimpleDocTemplate(buffer)
@@ -744,6 +748,7 @@ def exportar_movimientos_pdf(request):
 
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def materiales_stock_bajo(request):
 
     materiales = Material.objects.filter(

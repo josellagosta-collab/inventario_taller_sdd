@@ -12,12 +12,14 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from django.conf import settings
+from usuarios.decorators import pertenece_a_grupo
 
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def crear_incidencia(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 
@@ -90,6 +92,7 @@ def lista_incidencias(request):
 
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def resolver_incidencia(request, incidencia_id):
 
     incidencia = get_object_or_404(
@@ -160,6 +163,7 @@ def detalle_incidencia(request, incidencia_id):
     })
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_incidencias_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -273,6 +277,7 @@ def exportar_incidencias_excel(request):
     return response
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_incidencias_pdf(request):
     buffer = BytesIO()
     pdf = SimpleDocTemplate(buffer)

@@ -18,8 +18,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from auditoria.services import registrar_accion
+from usuarios.decorators import pertenece_a_grupo
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def crear_prestamo(request):
     if request.method == "POST":
         prestamo_form = PrestamoForm(request.POST)
@@ -118,6 +120,7 @@ def lista_prestamos(request):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def devolver_prestamo(request, prestamo_id):
     prestamo = get_object_or_404(Prestamo, id=prestamo_id)
 
@@ -186,6 +189,7 @@ def detalle_prestamo(request, prestamo_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_prestamos_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -292,6 +296,7 @@ def exportar_prestamos_excel(request):
     return response
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_prestamos_pdf(request):
     buffer = BytesIO()
     pdf = SimpleDocTemplate(buffer)
@@ -367,6 +372,7 @@ def exportar_prestamos_pdf(request):
     return response
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def crear_reserva(request):
     if request.method == "POST":
         form = ReservaForm(request.POST)
@@ -445,6 +451,7 @@ def lista_reservas(request):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def cancelar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id)
 
@@ -476,6 +483,7 @@ def cancelar_reserva(request, reserva_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def convertir_reserva_en_prestamo(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id)
 
@@ -521,6 +529,7 @@ def convertir_reserva_en_prestamo(request, reserva_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_reservas_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -619,6 +628,7 @@ def exportar_reservas_excel(request):
     return response
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def exportar_reservas_pdf(request):
     buffer = BytesIO()
     pdf = SimpleDocTemplate(buffer)
@@ -710,6 +720,7 @@ def detalle_reserva(request, reserva_id):
     })
     
 @login_required
+@pertenece_a_grupo("Administradores")
 def actualizar_reservas_caducadas(request):
     hoy = timezone.now().date()
 
@@ -742,6 +753,7 @@ def actualizar_reservas_caducadas(request):
     return redirect("prestamos:lista_reservas")
 
 @login_required
+@pertenece_a_grupo("Administradores")
 def crear_reserva_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
 

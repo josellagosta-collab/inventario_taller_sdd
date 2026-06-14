@@ -71,7 +71,7 @@ Preparar el entorno de desarrollo.
 - BL-017 [Pendiente] Crear modelo `Rol`.
 - BL-018 [Pendiente] Crear CRUD de usuarios.
 - BL-019 [Pendiente] Crear CRUD de roles.
-- BL-020 [Parcial] Implementar permisos.
+- BL-020 [Hecho] Implementar permisos.
 
 ---
 
@@ -401,7 +401,7 @@ Preparar el entorno de desarrollo.
 ### Tareas
 
 - BL-107 [Parcial] Configurar permisos.
-- BL-108 [Pendiente] Configurar grupos.
+- BL-108 [Hecho] Configurar grupos.
 - BL-109 [Hecho] Configurar CSRF.
 - BL-110 [Parcial] Configurar validaciones.
 - BL-111 [Pendiente] Configurar logs.
