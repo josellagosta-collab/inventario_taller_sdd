@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+Desactivar usuario
+{% endblock %}
+
+{% block content %}
+
+<h1>Desactivar usuario</h1>
+
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        Confirmar desactivación
+    </div>
+
+    <div class="card-body">
+        <p>
+            ¿Seguro que quieres desactivar este usuario?
+        </p>
+
+        <p>
+            <strong>{{ usuario_editado.username }}</strong>
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <button type="submit" class="btn btn-danger">
+                Desactivar usuario
+            </button>
+
+            <a href="{% url 'usuarios:lista_usuarios' %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

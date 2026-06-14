@@ -69,7 +69,7 @@ Preparar el entorno de desarrollo.
 
 - BL-016 [Pendiente] Crear modelo `PerfilUsuario`.
 - BL-017 [Pendiente] Crear modelo `Rol`.
-- BL-018 [Pendiente] Crear CRUD de usuarios.
+- BL-018 [Hecho] Crear CRUD de usuarios.
 - BL-019 [Pendiente] Crear CRUD de roles.
 - BL-020 [Hecho] Implementar permisos.
 
