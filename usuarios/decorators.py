@@ -1,6 +1,11 @@
+import logging
+from functools import wraps
+
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
-from functools import wraps
+
+
+security_logger = logging.getLogger("seguridad")
 
 
 def pertenece_a_grupo(nombre_grupo):
@@ -26,6 +31,12 @@ def pertenece_a_grupo(nombre_grupo):
                 return view_func(request, *args, **kwargs)
 
             if request.user.is_authenticated:
+                security_logger.warning(
+                    "Acceso denegado usuario=%s grupo_requerido=%s ruta=%s",
+                    request.user.username,
+                    nombre_grupo,
+                    request.path,
+                )
                 raise PermissionDenied
 
             return user_passes_test(comprobar)(view_func)(request, *args, **kwargs)

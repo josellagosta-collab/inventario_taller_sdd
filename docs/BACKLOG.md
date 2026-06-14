@@ -55,7 +55,7 @@ Preparar el entorno de desarrollo.
 - BL-012 [Hecho] Configurar Django Authentication.
 - BL-013 [Hecho] Crear página de login.
 - BL-014 [Parcial] Crear página de logout.
-- BL-015 [Pendiente] Crear recuperación de contraseña.
+- BL-015 [Hecho] Crear recuperación de contraseña.
 
 ---
 
@@ -404,7 +404,7 @@ Preparar el entorno de desarrollo.
 - BL-108 [Hecho] Configurar grupos.
 - BL-109 [Hecho] Configurar CSRF.
 - BL-110 [Hecho] Configurar validaciones.
-- BL-111 [Pendiente] Configurar logs.
+- BL-111 [Hecho] Configurar logs.
 
 ---
 
