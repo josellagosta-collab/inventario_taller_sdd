@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}
+Histórico de préstamos
+{% endblock %}
+
+{% block content %}
+
+<h1>Histórico de préstamos</h1>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Históricos</h5>
+                <p class="card-text fs-3">{{ total_historicos }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Devueltos</h5>
+                <p class="card-text fs-3">{{ total_devueltos }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Retrasados</h5>
+                <p class="card-text fs-3">{{ total_retrasados }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title">Perdidos</h5>
+                <p class="card-text fs-3">{{ total_perdidos }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="get" class="card card-body mb-4">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Buscar</label>
+            <input type="text"
+                   name="busqueda"
+                   class="form-control"
+                   placeholder="Material, código u observaciones"
+                   value="{{ busqueda }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <select name="estado" class="form-select">
+                <option value="">Todos</option>
+                {% for valor, texto in estados %}
+                    <option value="{{ valor }}"
+                        {% if estado == valor %}selected{% endif %}>
+                        {{ texto }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Usuario receptor</label>
+            <select name="usuario_receptor" class="form-select">
+                <option value="">Todos</option>
+                {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}"
+                        {% if usuario_receptor == usuario.id|stringformat:"s" %}selected{% endif %}>
+                        {{ usuario.username }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Profesor responsable</label>
+            <select name="profesor_responsable" class="form-select">
+                <option value="">Todos</option>
+                {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}"
+                        {% if profesor_responsable == usuario.id|stringformat:"s" %}selected{% endif %}>
+                        {{ usuario.username }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Desde</label>
+            <input type="date"
+                   name="fecha_desde"
+                   class="form-control"
+                   value="{{ fecha_desde }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Hasta</label>
+            <input type="date"
+                   name="fecha_hasta"
+                   class="form-control"
+                   value="{{ fecha_hasta }}">
+        </div>
+
+        <div class="col-md-6 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary">
+                Filtrar
+            </button>
+
+            <a href="{% url 'prestamos:historico_prestamos' %}"
+               class="btn btn-secondary">
+                Limpiar filtros
+            </a>
+
+            <a href="{% url 'prestamos:lista_prestamos' %}"
+               class="btn btn-outline-secondary">
+                Volver a préstamos
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario receptor</th>
+                <th>Profesor responsable</th>
+                <th>Material</th>
+                <th>Fecha préstamo</th>
+                <th>Prevista</th>
+                <th>Devolución real</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for prestamo in prestamos %}
+                <tr class="{% if prestamo.esta_retrasado %}table-danger{% endif %}">
+                    <td>
+                        <a href="{% url 'prestamos:detalle_prestamo' prestamo.id %}">
+                            #{{ prestamo.id }}
+                        </a>
+                    </td>
+                    <td>{{ prestamo.usuario_receptor.username }}</td>
+                    <td>{{ prestamo.profesor_responsable.username }}</td>
+                    <td>
+                        {% for linea in prestamo.lineas.all %}
+                            {{ linea.material.nombre }} x {{ linea.cantidad }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>{{ prestamo.fecha_prestamo }}</td>
+                    <td>{{ prestamo.fecha_prevista_devolucion }}</td>
+                    <td>{{ prestamo.fecha_devolucion_real|default:"-" }}</td>
+                    <td>
+                        {% if prestamo.esta_retrasado %}
+                            <span class="badge bg-danger">Retrasado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                {{ prestamo.get_estado_display }}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        No hay préstamos históricos con esos filtros.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<nav aria-label="Paginación del histórico de préstamos">
+    <ul class="pagination">
+        {% if prestamos.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page=1&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}&busqueda={{ busqueda }}&fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}">
+                    Primera
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ prestamos.previous_page_number }}&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}&busqueda={{ busqueda }}&fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}">
+                    Anterior
+                </a>
+            </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Página {{ prestamos.number }} de {{ prestamos.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if prestamos.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ prestamos.next_page_number }}&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}&busqueda={{ busqueda }}&fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}">
+                    Siguiente
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ prestamos.paginator.num_pages }}&estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}&busqueda={{ busqueda }}&fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}">
+                    Última
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% endblock %}

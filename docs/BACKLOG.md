@@ -234,7 +234,7 @@ Preparar el entorno de desarrollo.
 
 - BL-063 [Hecho] Crear listado de préstamos.
 - BL-064 [Hecho] Crear filtros de préstamos.
-- BL-065 [Parcial] Crear histórico.
+- BL-065 [Hecho] Crear histórico.
 
 ---
 

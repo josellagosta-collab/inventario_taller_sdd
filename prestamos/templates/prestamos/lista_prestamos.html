@@ -63,6 +63,11 @@ Préstamos
         Nuevo préstamo
     </a>
 
+    <a href="{% url 'prestamos:historico_prestamos' %}"
+       class="btn btn-primary">
+        Histórico
+    </a>
+
     <a href="{% url 'prestamos:exportar_prestamos_excel' %}?estado={{ estado }}&usuario_receptor={{ usuario_receptor }}&profesor_responsable={{ profesor_responsable }}"
     class="btn btn-success">
         Exportar Excel

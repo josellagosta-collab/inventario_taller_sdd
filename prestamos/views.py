@@ -118,6 +118,75 @@ def lista_prestamos(request):
         "total_devueltos": total_devueltos,
         "total_retrasados": total_retrasados,
     })
+
+
+@login_required
+def historico_prestamos(request):
+    hoy = timezone.now().date()
+    prestamos = Prestamo.objects.select_related(
+        "usuario_receptor",
+        "profesor_responsable"
+    ).prefetch_related("lineas__material").filter(
+        Q(estado__in=["devuelto", "retrasado", "perdido"]) |
+        Q(estado="activo", fecha_prevista_devolucion__lt=hoy)
+    )
+
+    usuarios = User.objects.all()
+    estado = request.GET.get("estado", "")
+    usuario_receptor = request.GET.get("usuario_receptor", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+    busqueda = request.GET.get("busqueda", "")
+    fecha_desde = request.GET.get("fecha_desde", "")
+    fecha_hasta = request.GET.get("fecha_hasta", "")
+
+    if estado:
+        prestamos = prestamos.filter(estado=estado)
+
+    if usuario_receptor:
+        prestamos = prestamos.filter(usuario_receptor_id=usuario_receptor)
+
+    if profesor_responsable:
+        prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
+
+    if busqueda:
+        prestamos = prestamos.filter(
+            Q(lineas__material__nombre__icontains=busqueda) |
+            Q(lineas__material__codigo_inventario__icontains=busqueda) |
+            Q(observaciones__icontains=busqueda)
+        ).distinct()
+
+    if fecha_desde:
+        prestamos = prestamos.filter(fecha_prestamo__gte=fecha_desde)
+
+    if fecha_hasta:
+        prestamos = prestamos.filter(fecha_prestamo__lte=fecha_hasta)
+
+    total_historicos = prestamos.count()
+    total_devueltos = prestamos.filter(estado="devuelto").count()
+    total_perdidos = prestamos.filter(estado="perdido").count()
+    total_retrasados = prestamos.filter(
+        Q(estado="retrasado") |
+        Q(estado="activo", fecha_prevista_devolucion__lt=hoy)
+    ).count()
+
+    paginator = Paginator(prestamos, 10)
+    pagina_prestamos = paginator.get_page(request.GET.get("page"))
+
+    return render(request, "prestamos/historico_prestamos.html", {
+        "prestamos": pagina_prestamos,
+        "usuarios": usuarios,
+        "estados": Prestamo.ESTADOS,
+        "estado": estado,
+        "usuario_receptor": usuario_receptor,
+        "profesor_responsable": profesor_responsable,
+        "busqueda": busqueda,
+        "fecha_desde": fecha_desde,
+        "fecha_hasta": fecha_hasta,
+        "total_historicos": total_historicos,
+        "total_devueltos": total_devueltos,
+        "total_perdidos": total_perdidos,
+        "total_retrasados": total_retrasados,
+    })
     
 @login_required
 @pertenece_a_grupo("Administradores")
