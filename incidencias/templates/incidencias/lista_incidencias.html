@@ -79,6 +79,11 @@ Incidencias
         Exportar Excel
     </a>
 
+    <a href="{% url 'incidencias:exportar_incidencias_csv' %}?busqueda={{ busqueda }}&prioridad={{ prioridad }}&estado={{ estado }}"
+    class="btn btn-outline-success">
+        Exportar CSV
+    </a>
+
    <a href="{% url 'incidencias:exportar_incidencias_pdf' %}?busqueda={{ busqueda }}&prioridad={{ prioridad }}&estado={{ estado }}"
     class="btn btn-danger">
         Exportar PDF

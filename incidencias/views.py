@@ -1,3 +1,5 @@
+import csv
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Incidencia
@@ -161,6 +163,70 @@ def detalle_incidencia(request, incidencia_id):
     return render(request, "incidencias/detalle_incidencia.html", {
         "incidencia": incidencia,
     })
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def exportar_incidencias_csv(request):
+    incidencias = Incidencia.objects.select_related(
+        "material",
+        "usuario",
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    prioridad = request.GET.get("prioridad", "")
+    estado = request.GET.get("estado", "")
+
+    if busqueda:
+        incidencias = incidencias.filter(
+            Q(titulo__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if prioridad:
+        incidencias = incidencias.filter(prioridad=prioridad)
+
+    if estado:
+        incidencias = incidencias.filter(estado=estado)
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="incidencias.csv"'
+    response.write("\ufeff")
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow([
+        "ID",
+        "Título",
+        "Material",
+        "Código material",
+        "Prioridad",
+        "Estado",
+        "Usuario",
+        "Fecha creación",
+        "Fecha cierre",
+        "Solución",
+    ])
+
+    for incidencia in incidencias:
+        writer.writerow([
+            incidencia.id,
+            incidencia.titulo,
+            incidencia.material.nombre,
+            incidencia.material.codigo_inventario,
+            incidencia.get_prioridad_display(),
+            incidencia.get_estado_display(),
+            incidencia.usuario.username if incidencia.usuario else "",
+            incidencia.fecha_creacion.strftime("%d/%m/%Y %H:%M"),
+            (
+                incidencia.fecha_cierre.strftime("%d/%m/%Y %H:%M")
+                if incidencia.fecha_cierre else ""
+            ),
+            incidencia.solucion or "",
+        ])
+
+    return response
+
 
 @login_required
 @pertenece_a_grupo("Administradores")

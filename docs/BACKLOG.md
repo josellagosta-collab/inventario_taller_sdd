@@ -352,7 +352,7 @@ Preparar el entorno de desarrollo.
 ### Tareas
 
 - BL-094 [Hecho] Crear aplicación `informes`.
-- BL-095 [Pendiente] Exportar CSV.
+- BL-095 [Hecho] Exportar CSV.
 - BL-096 [Hecho] Exportar Excel.
 - BL-097 [Hecho] Exportar PDF.
 

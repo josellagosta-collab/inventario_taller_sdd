@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime, time, timedelta
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -627,6 +628,72 @@ def dashboard(request):
 
 @login_required
 @pertenece_a_grupo("Administradores")
+def exportar_materiales_csv(request):
+    materiales = Material.objects.select_related(
+        "categoria",
+        "subcategoria",
+        "proveedor",
+        "ubicacion",
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    categoria_id = request.GET.get("categoria", "")
+    estado = request.GET.get("estado", "")
+    con_reserva = request.GET.get("con_reserva", "")
+    stock_bajo = request.GET.get("stock_bajo", "")
+
+    if busqueda:
+        materiales = materiales.filter(
+            Q(nombre__icontains=busqueda) |
+            Q(codigo_inventario__icontains=busqueda) |
+            Q(marca__icontains=busqueda) |
+            Q(modelo__icontains=busqueda) |
+            Q(numero_serie__icontains=busqueda)
+        )
+
+    if categoria_id:
+        materiales = materiales.filter(categoria_id=categoria_id)
+
+    if estado:
+        materiales = materiales.filter(estado=estado)
+
+    if con_reserva == "1":
+        materiales = materiales.filter(reservas__estado="activa").distinct()
+
+    if stock_bajo == "1":
+        materiales = materiales.filter(cantidad__lte=F("stock_minimo"))
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="inventario.csv"'
+    response.write("\ufeff")
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow([
+        "Código",
+        "Nombre",
+        "Categoría",
+        "Marca",
+        "Modelo",
+        "Cantidad",
+        "Estado",
+    ])
+
+    for material in materiales:
+        writer.writerow([
+            material.codigo_inventario,
+            material.nombre,
+            material.categoria.nombre if material.categoria else "",
+            material.marca,
+            material.modelo,
+            material.cantidad,
+            material.get_estado_display(),
+        ])
+
+    return response
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
 def exportar_materiales_excel(request):
     workbook = openpyxl.Workbook()
     hoja = workbook.active
@@ -870,6 +937,57 @@ def exportar_materiales_pdf(request):
     )
 
     response["Content-Disposition"] = 'attachment; filename="inventario_monlau.pdf"'
+
+    return response
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def exportar_movimientos_csv(request):
+    movimientos = MovimientoInventario.objects.select_related(
+        "material",
+        "usuario",
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    tipo = request.GET.get("tipo", "")
+
+    if busqueda:
+        movimientos = movimientos.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda)
+        )
+
+    if tipo:
+        movimientos = movimientos.filter(tipo=tipo)
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="movimientos.csv"'
+    response.write("\ufeff")
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow([
+        "ID",
+        "Material",
+        "Código material",
+        "Tipo",
+        "Usuario",
+        "Descripción",
+        "Fecha",
+    ])
+
+    for movimiento in movimientos:
+        writer.writerow([
+            movimiento.id,
+            movimiento.material.nombre,
+            movimiento.material.codigo_inventario,
+            movimiento.get_tipo_display(),
+            movimiento.usuario.username if movimiento.usuario else "",
+            movimiento.descripcion or "",
+            movimiento.fecha.strftime("%d/%m/%Y %H:%M"),
+        ])
 
     return response
 

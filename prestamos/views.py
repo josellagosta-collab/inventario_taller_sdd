@@ -1,3 +1,5 @@
+import csv
+
 from .forms import PrestamoForm, LineaPrestamoForm, ReservaForm, ReservaMaterialForm
 from .models import Prestamo, LineaPrestamo, Reserva
 from inventario.models import Material
@@ -257,6 +259,67 @@ def detalle_prestamo(request, prestamo_id):
         "prestamo": prestamo,
     })
     
+@login_required
+@pertenece_a_grupo("Administradores")
+def exportar_prestamos_csv(request):
+    prestamos = Prestamo.objects.select_related(
+        "usuario_receptor",
+        "profesor_responsable",
+    ).prefetch_related("lineas__material")
+
+    estado = request.GET.get("estado", "")
+    usuario_receptor = request.GET.get("usuario_receptor", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        prestamos = prestamos.filter(estado=estado)
+
+    if usuario_receptor:
+        prestamos = prestamos.filter(usuario_receptor_id=usuario_receptor)
+
+    if profesor_responsable:
+        prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="prestamos.csv"'
+    response.write("\ufeff")
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow([
+        "ID",
+        "Usuario receptor",
+        "Profesor responsable",
+        "Materiales",
+        "Fecha préstamo",
+        "Fecha prevista devolución",
+        "Fecha devolución real",
+        "Estado",
+    ])
+
+    for prestamo in prestamos:
+        materiales = ", ".join(
+            [
+                f"{linea.material.nombre} x {linea.cantidad}"
+                for linea in prestamo.lineas.all()
+            ]
+        )
+        writer.writerow([
+            prestamo.id,
+            prestamo.usuario_receptor.username,
+            prestamo.profesor_responsable.username,
+            materiales,
+            prestamo.fecha_prestamo.strftime("%d/%m/%Y"),
+            prestamo.fecha_prevista_devolucion.strftime("%d/%m/%Y"),
+            (
+                prestamo.fecha_devolucion_real.strftime("%d/%m/%Y")
+                if prestamo.fecha_devolucion_real else ""
+            ),
+            prestamo.get_estado_display(),
+        ])
+
+    return response
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def exportar_prestamos_excel(request):
@@ -597,6 +660,70 @@ def convertir_reserva_en_prestamo(request, reserva_id):
         "reserva": reserva,
     })
     
+@login_required
+@pertenece_a_grupo("Administradores")
+def exportar_reservas_csv(request):
+    reservas = Reserva.objects.select_related(
+        "usuario_reserva",
+        "profesor_responsable",
+        "material",
+    ).all()
+
+    estado = request.GET.get("estado", "")
+    busqueda = request.GET.get("busqueda", "")
+    usuario_reserva = request.GET.get("usuario_reserva", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+
+    if estado:
+        reservas = reservas.filter(estado=estado)
+
+    if busqueda:
+        reservas = reservas.filter(
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda)
+        )
+
+    if usuario_reserva:
+        reservas = reservas.filter(usuario_reserva_id=usuario_reserva)
+
+    if profesor_responsable:
+        reservas = reservas.filter(profesor_responsable_id=profesor_responsable)
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="reservas.csv"'
+    response.write("\ufeff")
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow([
+        "ID",
+        "Usuario reserva",
+        "Profesor responsable",
+        "Material",
+        "Código material",
+        "Cantidad",
+        "Fecha reserva",
+        "Fecha prevista recogida",
+        "Estado",
+        "Observaciones",
+    ])
+
+    for reserva in reservas:
+        writer.writerow([
+            reserva.id,
+            reserva.usuario_reserva.username,
+            reserva.profesor_responsable.username,
+            reserva.material.nombre,
+            reserva.material.codigo_inventario,
+            reserva.cantidad,
+            reserva.fecha_reserva.strftime("%d/%m/%Y"),
+            reserva.fecha_prevista_recogida.strftime("%d/%m/%Y"),
+            reserva.get_estado_display(),
+            reserva.observaciones or "",
+        ])
+
+    return response
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def exportar_reservas_excel(request):

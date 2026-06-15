@@ -13,8 +13,10 @@ urlpatterns = [
     path("movimientos/", views.lista_movimientos, name="lista_movimientos"),
     path("", views.dashboard, name="dashboard"),
     path("materiales/exportar/excel/", views.exportar_materiales_excel, name="exportar_materiales_excel"),
+    path("materiales/exportar/csv/", views.exportar_materiales_csv, name="exportar_materiales_csv"),
     path("materiales/exportar/pdf/", views.exportar_materiales_pdf, name="exportar_materiales_pdf"),
     path("movimientos/exportar/excel/", views.exportar_movimientos_excel, name="exportar_movimientos_excel"),
+    path("movimientos/exportar/csv/", views.exportar_movimientos_csv, name="exportar_movimientos_csv"),
     path("movimientos/exportar/pdf/", views.exportar_movimientos_pdf, name="exportar_movimientos_pdf"),
     path("materiales/stock-bajo/", views.materiales_stock_bajo, name="materiales_stock_bajo"),
 ]

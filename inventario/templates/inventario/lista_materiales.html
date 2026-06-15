@@ -15,13 +15,18 @@ Listado de materiales
         Añadir material
     </a>
 
-    <a href="{% url 'inventario:exportar_materiales_excel' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}"
-       class="btn btn-success">
+   <a href="{% url 'inventario:exportar_materiales_excel' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}"
+    class="btn btn-success">
         Exportar Excel
     </a>
 
+    <a href="{% url 'inventario:exportar_materiales_csv' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}"
+    class="btn btn-outline-success">
+        Exportar CSV
+    </a>
+
     <a href="{% url 'inventario:exportar_materiales_pdf' %}?busqueda={{ busqueda }}&categoria={{ categoria_id }}&estado={{ estado }}&con_reserva={{ con_reserva }}&stock_bajo={{ stock_bajo }}"
-       class="btn btn-danger">
+    class="btn btn-danger">
         Exportar PDF
     </a>
 
