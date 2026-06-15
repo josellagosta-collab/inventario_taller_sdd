@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Eliminar fotografía
+{% endblock %}
+
+{% block content %}
+
+<h1>Eliminar fotografía</h1>
+
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        Confirmar eliminación
+    </div>
+
+    <div class="card-body">
+        <p>
+            ¿Seguro que quieres eliminar esta fotografía?
+        </p>
+
+        <p>
+            <strong>{{ fotografia.titulo }}</strong>
+        </p>
+
+        <img src="{{ fotografia.imagen.url }}"
+             alt="{{ fotografia.titulo }}"
+             class="img-fluid mb-3"
+             style="max-height: 320px;">
+
+        <form method="post">
+            {% csrf_token %}
+
+            <button type="submit" class="btn btn-danger">
+                Eliminar fotografía
+            </button>
+
+            <a href="{% url 'inventario:detalle_material' material.id %}"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

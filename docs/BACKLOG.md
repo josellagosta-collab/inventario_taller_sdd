@@ -184,10 +184,10 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-050 [Pendiente] Crear modelo `Fotografia`.
+- BL-050 [Hecho] Crear modelo `Fotografia`.
 - BL-051 [Hecho] Configurar `MEDIA_ROOT`.
-- BL-052 [Parcial] Crear carga de imágenes.
-- BL-053 [Pendiente] Mostrar imágenes.
+- BL-052 [Hecho] Crear carga de imágenes.
+- BL-053 [Hecho] Mostrar imágenes.
 
 ---
 

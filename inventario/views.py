@@ -123,6 +123,7 @@ def detalle_material(request, material_id):
         ).prefetch_related(
             "movimientos__usuario",
             "documentos__usuario",
+            "fotografias__usuario",
             "incidencias__usuario",
             "reservas__usuario_reserva",
             "lineas_prestamo__prestamo__usuario_receptor",
@@ -169,6 +170,16 @@ def construir_historial_material(material):
             "descripcion": documento.get_tipo_documento_display(),
             "usuario": documento.usuario.username if documento.usuario else "-",
             "url": reverse("documentos:descargar_documento", args=[documento.id]),
+        })
+
+    for fotografia in material.fotografias.all():
+        historial.append({
+            "fecha": fotografia.fecha_subida,
+            "tipo": "Fotografía",
+            "titulo": fotografia.titulo,
+            "descripcion": fotografia.descripcion or "Fotografía subida.",
+            "usuario": fotografia.usuario.username if fotografia.usuario else "-",
+            "url": fotografia.imagen.url if fotografia.imagen else "",
         })
 
     for incidencia in material.incidencias.all():

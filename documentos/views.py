@@ -5,8 +5,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from auditoria.services import registrar_accion
 from inventario.models import Material
-from .forms import DocumentoForm
-from .models import Documento
+from .forms import DocumentoForm, FotografiaForm
+from .models import Documento, Fotografia
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -52,6 +52,62 @@ def eliminar_documento(request, documento_id):
 
     return render(request, "documentos/eliminar_documento.html", {
         "documento": documento,
+        "material": material,
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def subir_fotografia(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.method == "POST":
+        form = FotografiaForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            fotografia = form.save(commit=False)
+            fotografia.material = material
+
+            if request.user.is_authenticated:
+                fotografia.usuario = request.user
+
+            fotografia.save()
+            registrar_accion(
+                request,
+                "crear",
+                f"Fotografía subida: {fotografia.titulo}",
+                fotografia,
+            )
+            return redirect("inventario:detalle_material", material_id=material.id)
+    else:
+        form = FotografiaForm()
+
+    return render(request, "documentos/subir_fotografia.html", {
+        "form": form,
+        "material": material,
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def eliminar_fotografia(request, fotografia_id):
+    fotografia = get_object_or_404(Fotografia, id=fotografia_id)
+    material = fotografia.material
+
+    if request.method == "POST":
+        titulo = fotografia.titulo
+        fotografia.imagen.delete(save=False)
+        fotografia.delete()
+        registrar_accion(
+            request,
+            "eliminar",
+            f"Fotografía eliminada: {titulo}",
+            material,
+        )
+        return redirect("inventario:detalle_material", material_id=material.id)
+
+    return render(request, "documentos/eliminar_fotografia.html", {
+        "fotografia": fotografia,
         "material": material,
     })
     

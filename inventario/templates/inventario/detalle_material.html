@@ -9,88 +9,128 @@
 
   <div class="card">
     <div class="card-body">
-      <h3 class="card-title">{{ material.nombre }}</h3>
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-7">
+          <h3 class="card-title">{{ material.nombre }}</h3>
 
-      <p>
-        <strong>Código:</strong>
-        {{ material.codigo_inventario }}
-      </p>
+          <p>
+            <strong>Código:</strong>
+            {{ material.codigo_inventario }}
+          </p>
 
-      <p>
-        <strong>Descripción:</strong>
-        {{ material.descripcion }}
-      </p>
+          <p>
+            <strong>Descripción:</strong>
+            {{ material.descripcion }}
+          </p>
 
-      <p>
-        <strong>Categoría:</strong>
-        {{ material.categoria }}
-      </p>
+          <p>
+            <strong>Categoría:</strong>
+            {{ material.categoria }}
+          </p>
 
-      <p>
-        <strong>Subcategoría:</strong>
-        {{ material.subcategoria }}
-      </p>
+          <p>
+            <strong>Subcategoría:</strong>
+            {{ material.subcategoria }}
+          </p>
 
-      <p>
-        <strong>Proveedor:</strong>
-        {{ material.proveedor }}
-      </p>
+          <p>
+            <strong>Proveedor:</strong>
+            {{ material.proveedor }}
+          </p>
 
-      <p>
-        <strong>Marca:</strong>
-        {{ material.marca }}
-      </p>
+          <p>
+            <strong>Marca:</strong>
+            {{ material.marca }}
+          </p>
 
-      <p>
-        <strong>Modelo:</strong>
-        {{ material.modelo }}
-      </p>
+          <p>
+            <strong>Modelo:</strong>
+            {{ material.modelo }}
+          </p>
 
-      <p>
-        <strong>Número de serie:</strong>
-        {{ material.numero_serie }}
-      </p>
+          <p>
+            <strong>Número de serie:</strong>
+            {{ material.numero_serie }}
+          </p>
 
-      <p>
-        <strong>Cantidad:</strong>
-        {{ material.cantidad }}
-      </p>
+          <p>
+            <strong>Cantidad:</strong>
+            {{ material.cantidad }}
+          </p>
 
-      <p>
-        <strong>Stock mínimo:</strong>
-        {{ material.stock_minimo }}
-      </p>
+          <p>
+            <strong>Stock mínimo:</strong>
+            {{ material.stock_minimo }}
+          </p>
 
-      <p>
-        <strong>Precio compra:</strong>
-        {{ material.precio_compra }}
-      </p>
+          <p>
+            <strong>Precio compra:</strong>
+            {{ material.precio_compra }}
+          </p>
 
-      <p>
-        <strong>Fecha compra:</strong>
-        {{ material.fecha_compra }}
-      </p>
+          <p>
+            <strong>Fecha compra:</strong>
+            {{ material.fecha_compra }}
+          </p>
 
-      <p>
-        <strong>Garantía hasta:</strong>
-        {{ material.garantia_hasta }}
-      </p>
+          <p>
+            <strong>Garantía hasta:</strong>
+            {{ material.garantia_hasta }}
+          </p>
 
-      <p>
-        <strong>Estado:</strong>
-        {{ material.get_estado_display }}
-      </p>
+          <p>
+            <strong>Estado:</strong>
+            {{ material.get_estado_display }}
+          </p>
 
-      <p>
-        <strong>Ubicación:</strong>
-        {{ material.ubicacion }}
-      </p>
+          <p>
+            <strong>Ubicación:</strong>
+            {{ material.ubicacion }}
+          </p>
 
-      <p>
-        <strong>Observaciones:</strong>
-        {{ material.observaciones }}
-      </p>
+          <p>
+            <strong>Observaciones:</strong>
+            {{ material.observaciones }}
+          </p>
+        </div>
 
+        <div class="col-lg-5">
+          {% if material.fotografias.all %}
+            {% for fotografia in material.fotografias.all %}
+              {% if forloop.first %}
+                <div class="border rounded overflow-hidden">
+                  <img src="{{ fotografia.imagen.url }}"
+                       alt="{{ fotografia.titulo }}"
+                       class="img-fluid w-100"
+                       style="max-height: 420px; object-fit: cover;">
+
+                  <div class="p-3">
+                    <h5 class="mb-1">{{ fotografia.titulo }}</h5>
+                    <p class="text-muted mb-2">
+                      {{ fotografia.descripcion|default:"Sin descripción" }}
+                    </p>
+                    <a href="{{ fotografia.imagen.url }}"
+                       target="_blank"
+                       class="btn btn-sm btn-outline-primary">
+                      Ver imagen
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="border rounded p-4 text-center text-muted">
+              <p class="mb-3">Este material todavía no tiene fotografía principal.</p>
+              <a href="{% url 'documentos:subir_fotografia' material.id %}"
+                 class="btn btn-primary">
+                Subir fotografía
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-3">
       <a href="{% url 'inventario:editar_material' material.id %}" class="btn btn-warning">Editar material</a>
 
       <a href="{% url 'inventario:trasladar_material' material.id %}" class="btn btn-info">Trasladar material</a>
@@ -105,6 +145,51 @@
             Reservar material
         </a>
     {% endif %}
+      </div>
+      <hr />
+
+      <h2>Fotografías</h2>
+
+      <a href="{% url 'documentos:subir_fotografia' material.id %}" class="btn btn-primary mb-3">Subir fotografía</a>
+
+      {% if material.fotografias.all %}
+        <div class="row g-3 mb-4">
+          {% for fotografia in material.fotografias.all %}
+            <div class="col-md-4">
+              <div class="card h-100">
+                <img src="{{ fotografia.imagen.url }}"
+                     class="card-img-top"
+                     alt="{{ fotografia.titulo }}"
+                     style="height: 220px; object-fit: cover;">
+
+                <div class="card-body">
+                  <h5 class="card-title">{{ fotografia.titulo }}</h5>
+                  <p class="card-text">
+                    {{ fotografia.descripcion|default:"Sin descripción" }}
+                  </p>
+                  <p class="text-muted mb-2">
+                    {{ fotografia.fecha_subida }}
+                  </p>
+
+                  <a href="{{ fotografia.imagen.url }}"
+                     target="_blank"
+                     class="btn btn-sm btn-outline-primary">
+                    Ver
+                  </a>
+
+                  <a href="{% url 'documentos:eliminar_fotografia' fotografia.id %}"
+                     class="btn btn-sm btn-outline-danger">
+                    Eliminar
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">Este material todavía no tiene fotografías asociadas.</p>
+      {% endif %}
+
       <hr />
 
       <h2>Documentación asociada</h2>
