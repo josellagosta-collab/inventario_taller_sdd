@@ -18,6 +18,11 @@ Informes
 
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a href="{% url 'informes:informe_inventario' %}"
+                       class="btn btn-primary">
+                        Ver informe de inventario
+                    </a>
+
                     <a href="{% url 'inventario:exportar_materiales_excel' %}"
                        class="btn btn-success">
                         Exportar materiales Excel

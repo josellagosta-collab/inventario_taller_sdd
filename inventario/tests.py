@@ -12,6 +12,7 @@ from usuarios.models import PerfilUsuario
 
 from .forms import MaterialForm, TrasladoMaterialForm
 from .models import Categoria, Material, MovimientoInventario, Subcategoria
+from .templatetags.moneda import euros
 from .views import construir_historial_material
 
 
@@ -78,6 +79,16 @@ class MaterialFormValidacionesTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("cantidad", form.errors)
+
+
+class FormatoMonedaTests(TestCase):
+    def test_formatea_importes_en_euros_con_punto_de_millar(self):
+        self.assertEqual(euros("1234.5"), "1.234,50 €")
+        self.assertEqual(euros("1234567.89"), "1.234.567,89 €")
+
+    def test_formatea_importes_vacios_como_guion(self):
+        self.assertEqual(euros(None), "-")
+        self.assertEqual(euros(""), "-")
 
 
 class HistorialMaterialTests(TestCase):

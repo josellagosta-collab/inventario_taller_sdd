@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load moneda %}
 
 {% block title %}
   Detalle del material
@@ -65,7 +66,7 @@
 
           <p>
             <strong>Precio compra:</strong>
-            {{ material.precio_compra }}
+            {{ material.precio_compra|euros }}
           </p>
 
           <p>
@@ -358,7 +359,7 @@
               -
             {% endif %}
           </td>
-          <td>{{ mantenimiento.coste }}</td>
+          <td>{{ mantenimiento.coste|euros }}</td>
           <td>
             {% if mantenimiento.proxima_revision %}
               {{ mantenimiento.proxima_revision }}

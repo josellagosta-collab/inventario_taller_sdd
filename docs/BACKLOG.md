@@ -366,7 +366,7 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-098 [Parcial] Informe de inventario.
+- BL-098 [Hecho] Informe de inventario.
 - BL-099 [Parcial] Informe de préstamos.
 - BL-100 [Parcial] Informe de incidencias.
 - BL-101 [Pendiente] Informe económico.

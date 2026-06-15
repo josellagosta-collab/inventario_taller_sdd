@@ -103,3 +103,59 @@ class ExportarCsvTests(TestCase):
         response = self.client.get(reverse("prestamos:exportar_reservas_csv"))
 
         self.assert_csv_response(response, "reservas.csv", "Router CSV")
+
+
+class InformeInventarioTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.usuario = User.objects.create_user(
+            username="admin_informe",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.usuario)
+        self.usuario.groups.add(self.grupo_admin)
+        self.client.login(username="admin_informe", password="testpass123")
+
+        self.categoria = Categoria.objects.create(nombre="Herramientas")
+        self.material_visible = Material.objects.create(
+            codigo_inventario="INF-001",
+            nombre="Osciloscopio",
+            categoria=self.categoria,
+            cantidad=1,
+            stock_minimo=2,
+            precio_compra="350.00",
+        )
+        self.material_oculto = Material.objects.create(
+            codigo_inventario="INF-002",
+            nombre="Multímetro",
+            categoria=self.categoria,
+            cantidad=4,
+            stock_minimo=1,
+            precio_compra="25.00",
+        )
+
+    def test_panel_informes_enlaza_informe_inventario(self):
+        response = self.client.get(reverse("informes:panel_informes"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ver informe de inventario")
+        self.assertContains(response, reverse("informes:informe_inventario"))
+
+    def test_informe_inventario_muestra_resumen_y_materiales(self):
+        response = self.client.get(reverse("informes:informe_inventario"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Informe de inventario")
+        self.assertContains(response, "Osciloscopio")
+        self.assertContains(response, "Multímetro")
+        self.assertContains(response, "Stock bajo")
+
+    def test_informe_inventario_filtra_por_busqueda(self):
+        response = self.client.get(
+            reverse("informes:informe_inventario"),
+            {"busqueda": "Osciloscopio"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Osciloscopio")
+        self.assertNotContains(response, "Multímetro")
