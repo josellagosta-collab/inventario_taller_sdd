@@ -3,7 +3,7 @@ from datetime import datetime, time
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from .models import Material, Categoria, MovimientoInventario
-from .forms import MaterialForm
+from .forms import MaterialForm, TrasladoMaterialForm
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -346,6 +346,53 @@ def editar_material(request, material_id):
     return render(request, "inventario/editar_material.html", {
         "form": form,
         "material": material
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def trasladar_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+    ubicacion_anterior = str(material.ubicacion) if material.ubicacion else "Sin ubicación"
+
+    if request.method == "POST":
+        form = TrasladoMaterialForm(request.POST, material=material)
+
+        if form.is_valid():
+            nueva_ubicacion = form.cleaned_data["ubicacion"]
+            observaciones = form.cleaned_data.get("observaciones", "").strip()
+            material.ubicacion = nueva_ubicacion
+            material.save(update_fields=["ubicacion", "fecha_actualizacion"])
+
+            descripcion = (
+                "Traslado de material. "
+                f"Origen: {ubicacion_anterior}. "
+                f"Destino: {nueva_ubicacion}."
+            )
+
+            if observaciones:
+                descripcion = f"{descripcion} Observaciones: {observaciones}"
+
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="traslado",
+                usuario=request.user if request.user.is_authenticated else None,
+                descripcion=descripcion,
+            )
+            registrar_accion(
+                request,
+                "editar",
+                descripcion,
+                material,
+            )
+            return redirect("inventario:detalle_material", material_id=material.id)
+    else:
+        form = TrasladoMaterialForm(material=material)
+
+    return render(request, "inventario/trasladar_material.html", {
+        "form": form,
+        "material": material,
+        "ubicacion_actual": ubicacion_anterior,
     })
 
 

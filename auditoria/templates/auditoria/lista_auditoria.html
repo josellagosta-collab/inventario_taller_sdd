@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tz %}
 
 {% block title %}
 Auditoría
@@ -81,7 +82,7 @@ Auditoría
         {% for registro in registros %}
 
             <tr>
-                <td>{{ registro.fecha }}</td>
+                <td>{{ registro.fecha|localtime|date:"d/m/Y H:i" }}</td>
 
                 <td>
                     {% if registro.usuario %}

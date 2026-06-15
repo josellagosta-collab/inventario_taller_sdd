@@ -7,9 +7,10 @@ from django.utils import timezone
 
 from auditoria.models import RegistroAuditoria
 from incidencias.models import Incidencia
+from ubicaciones.models import Aula, Edificio, Ubicacion
 from usuarios.models import PerfilUsuario
 
-from .forms import MaterialForm
+from .forms import MaterialForm, TrasladoMaterialForm
 from .models import Categoria, Material, MovimientoInventario, Subcategoria
 from .views import construir_historial_material
 
@@ -213,3 +214,76 @@ class AuditoriaEdicionMaterialTests(TestCase):
         )
         self.assertFalse(RegistroAuditoria.objects.filter(accion="editar").exists())
         self.assertFalse(MovimientoInventario.objects.filter(tipo="edicion").exists())
+
+
+class TrasladoMaterialTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.usuario = User.objects.create_user(
+            username="admin",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.usuario)
+        self.usuario.groups.add(self.grupo_admin)
+        self.client.login(username="admin", password="testpass123")
+
+        self.categoria = Categoria.objects.create(nombre="Componentes")
+        self.edificio = Edificio.objects.create(nombre="Edificio A")
+        self.aula_origen = Aula.objects.create(
+            edificio=self.edificio,
+            nombre="Aula 1",
+        )
+        self.aula_destino = Aula.objects.create(
+            edificio=self.edificio,
+            nombre="Aula 2",
+        )
+        self.ubicacion_origen = Ubicacion.objects.create(
+            edificio=self.edificio,
+            aula=self.aula_origen,
+            posicion="Armario origen",
+        )
+        self.ubicacion_destino = Ubicacion.objects.create(
+            edificio=self.edificio,
+            aula=self.aula_destino,
+            posicion="Armario destino",
+        )
+        self.material = Material.objects.create(
+            codigo_inventario="MAT-TRAS-001",
+            nombre="Switch de pruebas",
+            categoria=self.categoria,
+            cantidad=1,
+            ubicacion=self.ubicacion_origen,
+        )
+
+    def test_formulario_rechaza_misma_ubicacion(self):
+        form = TrasladoMaterialForm(
+            data={"ubicacion": self.ubicacion_origen.id},
+            material=self.material,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("ubicacion", form.errors)
+
+    def test_trasladar_material_actualiza_ubicacion_y_registra_movimiento(self):
+        response = self.client.post(
+            reverse("inventario:trasladar_material", args=[self.material.id]),
+            {
+                "ubicacion": self.ubicacion_destino.id,
+                "observaciones": "Cambio por reorganización del taller",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("inventario:detalle_material", args=[self.material.id]),
+        )
+        self.material.refresh_from_db()
+        self.assertEqual(self.material.ubicacion, self.ubicacion_destino)
+
+        movimiento = MovimientoInventario.objects.get(tipo="traslado")
+        self.assertIn("Origen:", movimiento.descripcion)
+        self.assertIn("Destino:", movimiento.descripcion)
+        self.assertIn("Cambio por reorganización", movimiento.descripcion)
+
+        auditoria = RegistroAuditoria.objects.get(accion="editar")
+        self.assertEqual(auditoria.descripcion, movimiento.descripcion)

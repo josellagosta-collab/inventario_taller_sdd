@@ -253,7 +253,7 @@ Preparar el entorno de desarrollo.
 - BL-068 [Hecho] Registrar bajas.
 - BL-069 [Hecho] Registrar préstamos.
 - BL-070 [Hecho] Registrar devoluciones.
-- BL-071 [Pendiente] Registrar traslados.
+- BL-071 [Hecho] Registrar traslados.
 - BL-072 [Hecho] Crear listado de movimientos.
 - BL-123 [Hecho] Crear historial completo del material.
 

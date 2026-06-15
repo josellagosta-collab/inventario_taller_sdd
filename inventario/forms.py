@@ -163,3 +163,46 @@ class MaterialForm(forms.ModelForm):
                 )
 
         return cleaned_data
+
+
+class TrasladoMaterialForm(forms.Form):
+    ubicacion = forms.ModelChoiceField(
+        label="Nueva ubicación",
+        queryset=None,
+        required=True,
+        empty_label="Selecciona una ubicación",
+    )
+    observaciones = forms.CharField(
+        label="Observaciones",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def __init__(self, *args, material=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.material = material
+
+        from ubicaciones.models import Ubicacion
+
+        self.fields["ubicacion"].queryset = Ubicacion.objects.select_related(
+            "edificio",
+            "aula",
+            "armario",
+            "estanteria",
+            "caja",
+        )
+
+        for campo in self.fields.values():
+            campo.widget.attrs["class"] = "form-control"
+
+        self.fields["ubicacion"].widget.attrs["class"] = "form-select"
+
+    def clean_ubicacion(self):
+        ubicacion = self.cleaned_data.get("ubicacion")
+
+        if self.material and ubicacion == self.material.ubicacion:
+            raise forms.ValidationError(
+                "La nueva ubicación debe ser diferente a la ubicación actual."
+            )
+
+        return ubicacion

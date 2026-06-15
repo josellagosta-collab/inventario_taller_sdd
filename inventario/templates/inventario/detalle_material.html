@@ -93,6 +93,8 @@
 
       <a href="{% url 'inventario:editar_material' material.id %}" class="btn btn-warning">Editar material</a>
 
+      <a href="{% url 'inventario:trasladar_material' material.id %}" class="btn btn-info">Trasladar material</a>
+
       <a href="{% url 'incidencias:crear_incidencia' material.id %}" class="btn btn-danger"> Crear incidencia</a>
 
       <a href="{% url 'inventario:retirar_material' material.id %}" class="btn btn-danger">Retirar material</a>
