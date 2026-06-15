@@ -303,7 +303,7 @@ Preparar el entorno de desarrollo.
 
 - BL-081 [Hecho] Crear aplicación `mantenimiento`.
 - BL-082 [Hecho] Crear modelo `Mantenimiento`.
-- BL-083 [Pendiente] Crear formulario de mantenimiento.
+- BL-083 [Hecho] Crear formulario de mantenimiento.
 - BL-084 [Pendiente] Crear histórico de mantenimiento.
 
 ---

@@ -137,6 +137,8 @@
 
       <a href="{% url 'incidencias:crear_incidencia' material.id %}" class="btn btn-danger"> Crear incidencia</a>
 
+      <a href="{% url 'mantenimiento:crear_mantenimiento_material' material.id %}" class="btn btn-primary">Registrar mantenimiento</a>
+
       <a href="{% url 'inventario:retirar_material' material.id %}" class="btn btn-danger">Retirar material</a>
 
       {% if material.estado == "disponible" %}

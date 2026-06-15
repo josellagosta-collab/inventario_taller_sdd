@@ -30,6 +30,7 @@ urlpatterns = [
     path("", include("auditoria.urls")),
     path("", include("ubicaciones.urls")),
     path("", include("usuarios.urls")),
+    path("", include("mantenimiento.urls")),
 ]
 
 if settings.DEBUG:
