@@ -33,3 +33,6 @@ dist/
 
 # Configuración jira
 docs/jira_variables_entorno.md
+
+# No añadir variables de entorno sensibles al repositorio
+.env

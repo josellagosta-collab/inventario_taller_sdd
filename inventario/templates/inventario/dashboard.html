@@ -217,6 +217,20 @@ Dashboard
         </a>
     </div>
 
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'mantenimiento:lista_planes_mantenimiento' %}?alerta=pendientes"
+           class="text-decoration-none">
+
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Revisiones pendientes</h5>
+                    <p class="card-text fs-3">{{ revisiones_pendientes }}</p>
+                </div>
+            </div>
+
+        </a>
+    </div>
+
 </div>
 
 <div class="card shadow mb-4">

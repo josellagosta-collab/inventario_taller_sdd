@@ -16,6 +16,8 @@
 
 ## Cambios aceptados
 
+- **2026-06-15:** Dashboard actualizado con contador de revisiones pendientes, enlazado al filtro de planes de mantenimiento pendientes.
+- **2026-06-15:** Traslado de materiales implementado. Permite cambiar la ubicación de un material, registra movimiento de tipo `traslado` y deja constancia en auditoría.
 - **2026-06-14:** Navegación superior simplificada y menú lateral izquierdo aceptados por ahora. La cabecera queda reservada para Dashboard, Administración, usuario autenticado y cierre de sesión. El resto de accesos se agrupan en menú lateral por módulos.
 
 ---
@@ -387,7 +389,7 @@ Preparar el entorno de desarrollo.
 - BL-103 [Hecho] Mostrar estadísticas de inventario.
 - BL-104 [Hecho] Mostrar estadísticas de préstamos.
 - BL-105 [Hecho] Mostrar incidencias abiertas.
-- BL-106 [Pendiente] Mostrar mantenimientos pendientes.
+- BL-106 [Hecho] Mostrar mantenimientos pendientes.
 
 ---
 

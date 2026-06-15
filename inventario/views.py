@@ -591,6 +591,8 @@ def dashboard(request):
         proxima_revision__gte=hoy,
         proxima_revision__lte=fecha_limite_alerta,
     ).count()
+
+    revisiones_pendientes = revisiones_vencidas + revisiones_proximas
     
     ultimas_reservas = Reserva.objects.select_related(
         "usuario_reserva",
@@ -622,6 +624,7 @@ def dashboard(request):
         "reservas_caducadas_pendientes": reservas_caducadas_pendientes,
         "revisiones_vencidas": revisiones_vencidas,
         "revisiones_proximas": revisiones_proximas,
+        "revisiones_pendientes": revisiones_pendientes,
         "ultimas_reservas": ultimas_reservas,
     })
 
