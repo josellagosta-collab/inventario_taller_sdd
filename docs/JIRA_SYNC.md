@@ -75,7 +75,7 @@ El comando solo crea o actualiza los elementos que hayan cambiado respecto a `do
 Si necesitas reenviar todo a Jira:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py sync_backlog_jira --tasks-only --apply --force
+.\.venv\Scripts\
 ```
 
 ## Notas

@@ -16,6 +16,9 @@
 
 ## Cambios aceptados
 
+- **2026-06-15:** Documentación de despliegue añadida en `docs/DESPLIEGUE.md`, con checklist de producción, estáticos, media, logs, servidor de aplicación y seguridad.
+- **2026-06-15:** Documentación de instalación añadida en `docs/INSTALACION.md`, con pasos para entorno virtual, dependencias, PostgreSQL, migraciones, grupos y comprobaciones.
+- **2026-06-15:** `README.md` actualizado como portada técnica del proyecto, con módulos, requisitos, configuración rápida, pruebas y enlaces a documentación.
 - **2026-06-15:** Pruebas de rendimiento añadidas para listados y dashboard. Optimizado `lista_materiales` con `select_related` y orden explícito para evitar N+1 y paginación inconsistente.
 - **2026-06-15:** Pruebas de integración añadidas para préstamo/devolución, reserva/conversión e incidencia/resolución, validando inventario, movimientos y auditoría.
 - **2026-06-15:** Pruebas de permisos añadidas para vistas administrativas y vistas de consulta. Validan anónimos, usuarios sin grupo `Administradores` y superusuarios.
@@ -447,9 +450,9 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-118 [Pendiente] Actualizar `README.md`.
-- BL-119 [Pendiente] Documentar instalación.
-- BL-120 [Pendiente] Documentar despliegue.
+- BL-118 [Hecho] Actualizar `README.md`.
+- BL-119 [Hecho] Documentar instalación.
+- BL-120 [Hecho] Documentar despliegue.
 - BL-121 [Pendiente] Documentar base de datos.
 - BL-122 [Pendiente] Documentar API futura.
 
