@@ -82,6 +82,11 @@ Informes
 
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a href="{% url 'informes:informe_incidencias' %}"
+                       class="btn btn-primary">
+                        Ver informe de incidencias
+                    </a>
+
                     <a href="{% url 'incidencias:exportar_incidencias_excel' %}"
                        class="btn btn-success">
                         Exportar incidencias Excel

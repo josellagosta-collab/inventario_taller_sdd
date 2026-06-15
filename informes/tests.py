@@ -246,3 +246,81 @@ class InformePrestamosTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Router préstamo")
         self.assertNotContains(response, "Switch préstamo")
+
+
+class InformeIncidenciasTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.usuario = User.objects.create_user(
+            username="admin_incidencias",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.usuario)
+        self.usuario.groups.add(self.grupo_admin)
+        self.client.login(username="admin_incidencias", password="testpass123")
+
+        self.categoria = Categoria.objects.create(nombre="Equipos")
+        self.material_visible = Material.objects.create(
+            codigo_inventario="INC-INF-001",
+            nombre="Equipo incidencia",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.material_oculto = Material.objects.create(
+            codigo_inventario="INC-INF-002",
+            nombre="Equipo cerrado",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        Incidencia.objects.create(
+            material=self.material_visible,
+            usuario=self.usuario,
+            titulo="Fallo visible",
+            descripcion="No arranca",
+            prioridad="critica",
+            estado="abierta",
+        )
+        Incidencia.objects.create(
+            material=self.material_oculto,
+            usuario=self.usuario,
+            titulo="Fallo cerrado",
+            descripcion="Resuelto",
+            prioridad="baja",
+            estado="cerrada",
+        )
+
+    def test_panel_informes_enlaza_informe_incidencias(self):
+        response = self.client.get(reverse("informes:panel_informes"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ver informe de incidencias")
+        self.assertContains(response, reverse("informes:informe_incidencias"))
+
+    def test_informe_incidencias_muestra_resumen_e_incidencias(self):
+        response = self.client.get(reverse("informes:informe_incidencias"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Informe de incidencias")
+        self.assertContains(response, "Fallo visible")
+        self.assertContains(response, "Fallo cerrado")
+        self.assertContains(response, "Críticas activas")
+
+    def test_informe_incidencias_filtra_por_busqueda(self):
+        response = self.client.get(
+            reverse("informes:informe_incidencias"),
+            {"busqueda": "visible"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Fallo visible")
+        self.assertNotContains(response, "Fallo cerrado")
+
+    def test_informe_incidencias_filtra_abiertas(self):
+        response = self.client.get(
+            reverse("informes:informe_incidencias"),
+            {"abiertas": "1"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Fallo visible")
+        self.assertNotContains(response, "Fallo cerrado")

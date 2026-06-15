@@ -4,6 +4,7 @@ from django.db.models import Count, F, Q, Sum
 from django.shortcuts import render
 from django.utils import timezone
 
+from incidencias.models import Incidencia
 from inventario.models import Categoria, Material
 from prestamos.models import Prestamo
 from usuarios.decorators import pertenece_a_grupo
@@ -171,4 +172,78 @@ def informe_prestamos(request):
         "total_materiales_prestados": total_materiales_prestados,
         "por_estado": por_estado,
         "por_profesor": por_profesor,
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def informe_incidencias(request):
+    incidencias = Incidencia.objects.select_related(
+        "material",
+        "usuario",
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    prioridad = request.GET.get("prioridad", "")
+    estado = request.GET.get("estado", "")
+    abiertas = request.GET.get("abiertas", "")
+
+    if busqueda:
+        incidencias = incidencias.filter(
+            Q(titulo__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda) |
+            Q(usuario__username__icontains=busqueda)
+        )
+
+    if prioridad:
+        incidencias = incidencias.filter(prioridad=prioridad)
+
+    if estado:
+        incidencias = incidencias.filter(estado=estado)
+
+    if abiertas == "1":
+        incidencias = incidencias.exclude(estado="cerrada")
+
+    incidencias = incidencias.distinct()
+    total_incidencias = incidencias.count()
+    total_abiertas = incidencias.exclude(estado="cerrada").count()
+    total_cerradas = incidencias.filter(estado="cerrada").count()
+    total_criticas = incidencias.filter(
+        prioridad="critica",
+    ).exclude(
+        estado="cerrada",
+    ).count()
+    total_reparacion = incidencias.filter(estado="en_reparacion").count()
+
+    por_estado = incidencias.values("estado").annotate(
+        total=Count("id")
+    ).order_by("estado")
+    por_prioridad = incidencias.values("prioridad").annotate(
+        total=Count("id")
+    ).order_by("prioridad")
+    por_material = incidencias.values(
+        "material__nombre",
+        "material__codigo_inventario",
+    ).annotate(
+        total=Count("id")
+    ).order_by("-total", "material__nombre")[:10]
+
+    return render(request, "informes/informe_incidencias.html", {
+        "incidencias": incidencias,
+        "prioridades": Incidencia.PRIORIDADES,
+        "estados": Incidencia.ESTADOS,
+        "busqueda": busqueda,
+        "prioridad": prioridad,
+        "estado": estado,
+        "abiertas": abiertas,
+        "total_incidencias": total_incidencias,
+        "total_abiertas": total_abiertas,
+        "total_cerradas": total_cerradas,
+        "total_criticas": total_criticas,
+        "total_reparacion": total_reparacion,
+        "por_estado": por_estado,
+        "por_prioridad": por_prioridad,
+        "por_material": por_material,
     })

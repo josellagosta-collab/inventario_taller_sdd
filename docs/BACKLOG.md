@@ -368,7 +368,7 @@ Preparar el entorno de desarrollo.
 
 - BL-098 [Hecho] Informe de inventario.
 - BL-099 [Hecho] Informe de préstamos.
-- BL-100 [Parcial] Informe de incidencias.
+- BL-100 [Hecho] Informe de incidencias.
 - BL-101 [Pendiente] Informe económico.
 
 ---
