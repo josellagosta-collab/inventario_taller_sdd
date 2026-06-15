@@ -16,6 +16,7 @@
 
 ## Cambios aceptados
 
+- **2026-06-15:** Pruebas de modelos añadidas para inventario, ubicaciones, préstamos, incidencias, documentos y auditoría. Suite validada con 65 tests OK.
 - **2026-06-15:** Permisos base configurados por grupos. El comando `inicializar_grupos` crea y actualiza `Administradores`, `Profesores`, `Técnicos` y `Alumnos` con permisos de modelo coherentes.
 - **2026-06-15:** Dashboard actualizado con contador de revisiones pendientes, enlazado al filtro de planes de mantenimiento pendientes.
 - **2026-06-15:** Traslado de materiales implementado. Permite cambiar la ubicación de un material, registra movimiento de tipo `traslado` y deja constancia en auditoría.
@@ -422,7 +423,7 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-112 [Pendiente] Crear pruebas de modelos.
+- BL-112 [Hecho] Crear pruebas de modelos.
 - BL-113 [Pendiente] Crear pruebas de formularios.
 - BL-114 [Pendiente] Crear pruebas de vistas.
 - BL-115 [Pendiente] Crear pruebas de permisos.

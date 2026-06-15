@@ -7,7 +7,72 @@ from django.utils import timezone
 
 from inventario.models import Categoria, Material
 
-from .models import LineaPrestamo, Prestamo
+from .models import LineaPrestamo, Prestamo, Reserva
+
+
+class PrestamosModelTests(TestCase):
+    def setUp(self):
+        self.profesor = User.objects.create_user(username="profesor")
+        self.alumno = User.objects.create_user(username="alumno")
+        self.categoria = Categoria.objects.create(nombre="Redes")
+        self.material = Material.objects.create(
+            codigo_inventario="PRE-001",
+            nombre="Router de préstamo",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+
+    def test_prestamo_activo_detecta_retraso(self):
+        prestamo = Prestamo.objects.create(
+            usuario_receptor=self.alumno,
+            profesor_responsable=self.profesor,
+            fecha_prevista_devolucion=timezone.now().date() - timedelta(days=1),
+            estado="activo",
+        )
+
+        self.assertTrue(prestamo.esta_retrasado())
+
+    def test_prestamo_devuelto_no_se_considera_retrasado(self):
+        prestamo = Prestamo.objects.create(
+            usuario_receptor=self.alumno,
+            profesor_responsable=self.profesor,
+            fecha_prevista_devolucion=timezone.now().date() - timedelta(days=1),
+            estado="devuelto",
+        )
+
+        self.assertFalse(prestamo.esta_retrasado())
+
+    def test_linea_prestamo_y_reserva_devuelven_texto_legible(self):
+        prestamo = Prestamo.objects.create(
+            usuario_receptor=self.alumno,
+            profesor_responsable=self.profesor,
+            fecha_prevista_devolucion=timezone.now().date() + timedelta(days=7),
+        )
+        linea = LineaPrestamo.objects.create(
+            prestamo=prestamo,
+            material=self.material,
+            cantidad=2,
+        )
+        reserva = Reserva.objects.create(
+            usuario_reserva=self.alumno,
+            profesor_responsable=self.profesor,
+            material=self.material,
+            fecha_prevista_recogida=timezone.now().date() + timedelta(days=1),
+        )
+
+        self.assertEqual(str(linea), "Router de préstamo x 2")
+        self.assertEqual(str(reserva), f"Reserva {reserva.id} - Router de préstamo")
+
+    def test_reserva_activa_detecta_caducidad(self):
+        reserva = Reserva.objects.create(
+            usuario_reserva=self.alumno,
+            profesor_responsable=self.profesor,
+            material=self.material,
+            fecha_prevista_recogida=timezone.now().date() - timedelta(days=1),
+            estado="activa",
+        )
+
+        self.assertTrue(reserva.esta_caducada())
 
 
 class HistoricoPrestamosTests(TestCase):

@@ -17,6 +17,52 @@ TEST_MEDIA_ROOT = settings.BASE_DIR / ".test_media_documentos"
 
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class DocumentosModelTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(Path(TEST_MEDIA_ROOT), ignore_errors=True)
+
+    def setUp(self):
+        self.usuario = User.objects.create_user(username="profesor")
+        self.categoria = Categoria.objects.create(nombre="Redes")
+        self.material = Material.objects.create(
+            codigo_inventario="DOC-MODEL-001",
+            nombre="Switch con adjuntos",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+
+    def test_documento_y_fotografia_devuelven_material_asociado(self):
+        documento = Documento.objects.create(
+            material=self.material,
+            nombre="Manual técnico",
+            archivo=SimpleUploadedFile("manual.txt", b"contenido"),
+            tipo_documento="manual",
+            usuario=self.usuario,
+        )
+        fotografia = Fotografia.objects.create(
+            material=self.material,
+            titulo="Vista frontal",
+            imagen=SimpleUploadedFile(
+                "foto.gif",
+                (
+                    b"GIF87a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
+                    b"\xff\xff\xff,\x00\x00\x00\x00\x01\x00\x01\x00"
+                    b"\x00\x02\x02D\x01\x00;"
+                ),
+                content_type="image/gif",
+            ),
+            usuario=self.usuario,
+        )
+
+        self.assertEqual(str(documento), "Manual técnico - Switch con adjuntos")
+        self.assertEqual(str(fotografia), "Vista frontal - Switch con adjuntos")
+        self.assertEqual(self.material.documentos.count(), 1)
+        self.assertEqual(self.material.fotografias.count(), 1)
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
 class DescargarDocumentoTests(TestCase):
     @classmethod
     def tearDownClass(cls):

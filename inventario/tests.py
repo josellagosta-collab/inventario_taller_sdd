@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import Group, User
+from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -14,6 +15,43 @@ from .forms import MaterialForm, TrasladoMaterialForm
 from .models import Categoria, Material, MovimientoInventario, Subcategoria
 from .templatetags.moneda import euros
 from .views import construir_historial_material
+
+
+class InventarioModelTests(TestCase):
+    def setUp(self):
+        self.categoria = Categoria.objects.create(nombre="Componentes")
+        self.subcategoria = Subcategoria.objects.create(
+            categoria=self.categoria,
+            nombre="CPU",
+        )
+        self.material = Material.objects.create(
+            codigo_inventario="INV-001",
+            nombre="Procesador de pruebas",
+            categoria=self.categoria,
+            subcategoria=self.subcategoria,
+            cantidad=1,
+        )
+
+    def test_categoria_subcategoria_y_material_devuelven_texto_legible(self):
+        self.assertEqual(str(self.categoria), "Componentes")
+        self.assertEqual(str(self.subcategoria), "Componentes - CPU")
+        self.assertEqual(str(self.material), "INV-001 - Procesador de pruebas")
+
+    def test_subcategoria_no_se_repite_en_la_misma_categoria(self):
+        with self.assertRaises(IntegrityError):
+            Subcategoria.objects.create(
+                categoria=self.categoria,
+                nombre="CPU",
+            )
+
+    def test_movimiento_inventario_devuelve_material_y_tipo(self):
+        movimiento = MovimientoInventario.objects.create(
+            material=self.material,
+            tipo="alta",
+            descripcion="Alta inicial",
+        )
+
+        self.assertEqual(str(movimiento), "Procesador de pruebas - Alta")
 
 
 class MaterialFormValidacionesTests(TestCase):
