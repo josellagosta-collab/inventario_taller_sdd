@@ -19,9 +19,6 @@ logs/*.log
 # Media (opcional)
 media/
 
-# Variables de entorno
-.env
-
 # Pytest
 .pytest_cache/
 .test_media_documentos/
