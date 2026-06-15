@@ -316,7 +316,7 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-085 [Pendiente] Crear modelo `PlanMantenimiento`.
+- BL-085 [Hecho] Crear modelo `PlanMantenimiento`.
 - BL-086 [Pendiente] Crear planificación.
 - BL-087 [Pendiente] Generar alertas de revisión.
 

@@ -12,7 +12,7 @@ from inventario.models import MovimientoInventario
 from usuarios.models import PerfilUsuario
 
 from .forms import MantenimientoForm
-from .models import Mantenimiento
+from .models import Mantenimiento, PlanMantenimiento
 
 
 class MantenimientoModelTests(TestCase):
@@ -77,6 +77,62 @@ class MantenimientoModelTests(TestCase):
 
         with self.assertRaises(ValidationError):
             mantenimiento.full_clean()
+
+
+class PlanMantenimientoModelTests(TestCase):
+    def setUp(self):
+        self.categoria = Categoria.objects.create(nombre="Equipos")
+        self.material = Material.objects.create(
+            codigo_inventario="PLAN-001",
+            nombre="Equipo con plan",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.responsable = User.objects.create_user(username="responsable")
+
+    def test_crear_plan_mantenimiento_valido(self):
+        hoy = timezone.now().date()
+        plan = PlanMantenimiento.objects.create(
+            material=self.material,
+            responsable=self.responsable,
+            nombre="Revisión mensual",
+            tipo=Mantenimiento.TIPO_PREVENTIVO,
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=30),
+        )
+
+        self.assertEqual(plan.material, self.material)
+        self.assertEqual(plan.responsable, self.responsable)
+        self.assertTrue(plan.activo)
+
+    def test_frecuencia_debe_ser_mayor_que_cero(self):
+        hoy = timezone.now().date()
+        plan = PlanMantenimiento(
+            material=self.material,
+            responsable=self.responsable,
+            nombre="Plan incorrecto",
+            frecuencia_dias=0,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=30),
+        )
+
+        with self.assertRaises(ValidationError):
+            plan.full_clean()
+
+    def test_proxima_revision_no_puede_ser_anterior_a_inicio(self):
+        hoy = timezone.now().date()
+        plan = PlanMantenimiento(
+            material=self.material,
+            responsable=self.responsable,
+            nombre="Plan con fecha incorrecta",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy - timedelta(days=1),
+        )
+
+        with self.assertRaises(ValidationError):
+            plan.full_clean()
 
 
 class MantenimientoFormTests(TestCase):

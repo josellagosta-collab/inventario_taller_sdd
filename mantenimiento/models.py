@@ -110,3 +110,89 @@ class Mantenimiento(models.Model):
 
     def __str__(self):
         return f"{self.material} - {self.get_tipo_display()} - {self.fecha}"
+
+
+class PlanMantenimiento(models.Model):
+    material = models.ForeignKey(
+        Material,
+        on_delete=models.PROTECT,
+        related_name="planes_mantenimiento",
+        verbose_name="material",
+    )
+    responsable = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="planes_mantenimiento",
+        verbose_name="responsable",
+    )
+    nombre = models.CharField(
+        "nombre",
+        max_length=150,
+    )
+    tipo = models.CharField(
+        "tipo",
+        max_length=20,
+        choices=Mantenimiento.TIPOS,
+        default=Mantenimiento.TIPO_PREVENTIVO,
+    )
+    descripcion = models.TextField(
+        "descripción",
+        blank=True,
+    )
+    frecuencia_dias = models.PositiveIntegerField(
+        "frecuencia en días",
+        default=30,
+    )
+    fecha_inicio = models.DateField(
+        "fecha de inicio",
+        default=timezone.now,
+    )
+    proxima_revision = models.DateField(
+        "próxima revisión",
+    )
+    activo = models.BooleanField(
+        "activo",
+        default=True,
+    )
+    observaciones = models.TextField(
+        "observaciones",
+        blank=True,
+    )
+    creado_en = models.DateTimeField(
+        "creado en",
+        auto_now_add=True,
+    )
+    actualizado_en = models.DateTimeField(
+        "actualizado en",
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "plan de mantenimiento"
+        verbose_name_plural = "planes de mantenimiento"
+        ordering = ["proxima_revision", "material__nombre"]
+
+    def clean(self):
+        errores = {}
+
+        if self.frecuencia_dias is not None and self.frecuencia_dias <= 0:
+            errores["frecuencia_dias"] = (
+                "La frecuencia debe ser mayor que cero días."
+            )
+
+        if (
+            self.fecha_inicio
+            and self.proxima_revision
+            and self.proxima_revision < self.fecha_inicio
+        ):
+            errores["proxima_revision"] = (
+                "La próxima revisión no puede ser anterior a la fecha de inicio."
+            )
+
+        if errores:
+            raise ValidationError(errores)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.material}"
