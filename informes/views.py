@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count, F, Q, Sum
@@ -6,6 +8,7 @@ from django.utils import timezone
 
 from incidencias.models import Incidencia
 from inventario.models import Categoria, Material
+from mantenimiento.models import Mantenimiento
 from prestamos.models import Prestamo
 from usuarios.decorators import pertenece_a_grupo
 
@@ -246,4 +249,132 @@ def informe_incidencias(request):
         "por_estado": por_estado,
         "por_prioridad": por_prioridad,
         "por_material": por_material,
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def informe_economico(request):
+    materiales = Material.objects.select_related(
+        "categoria",
+        "ubicacion",
+    ).all()
+    mantenimientos = Mantenimiento.objects.select_related(
+        "material",
+        "tecnico",
+    ).all()
+
+    categoria_id = request.GET.get("categoria", "")
+    estado = request.GET.get("estado", "")
+    tipo_mantenimiento = request.GET.get("tipo_mantenimiento", "")
+    fecha_desde = request.GET.get("fecha_desde", "")
+    fecha_hasta = request.GET.get("fecha_hasta", "")
+
+    if categoria_id:
+        materiales = materiales.filter(categoria_id=categoria_id)
+        mantenimientos = mantenimientos.filter(material__categoria_id=categoria_id)
+
+    if estado:
+        materiales = materiales.filter(estado=estado)
+        mantenimientos = mantenimientos.filter(material__estado=estado)
+
+    if tipo_mantenimiento:
+        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
+
+    if fecha_desde:
+        mantenimientos = mantenimientos.filter(fecha__gte=fecha_desde)
+
+    if fecha_hasta:
+        mantenimientos = mantenimientos.filter(fecha__lte=fecha_hasta)
+
+    materiales = materiales.distinct()
+    mantenimientos = mantenimientos.distinct()
+
+    valor_inventario = Decimal("0")
+    materiales_valorados = []
+    valor_por_categoria = {}
+
+    for material in materiales:
+        valor_unitario = material.precio_compra or Decimal("0")
+        valor_total = valor_unitario * material.cantidad
+        valor_inventario += valor_total
+
+        categoria = material.categoria.nombre if material.categoria else "Sin categoría"
+        if categoria not in valor_por_categoria:
+            valor_por_categoria[categoria] = {
+                "categoria": categoria,
+                "materiales": 0,
+                "unidades": 0,
+                "valor": Decimal("0"),
+            }
+
+        valor_por_categoria[categoria]["materiales"] += 1
+        valor_por_categoria[categoria]["unidades"] += material.cantidad
+        valor_por_categoria[categoria]["valor"] += valor_total
+
+        materiales_valorados.append({
+            "material": material,
+            "valor_unitario": valor_unitario,
+            "valor_total": valor_total,
+        })
+
+    coste_mantenimiento = sum(
+        (mantenimiento.coste or Decimal("0"))
+        for mantenimiento in mantenimientos
+    )
+    total_mantenimientos = mantenimientos.count()
+    coste_medio_mantenimiento = (
+        coste_mantenimiento / total_mantenimientos
+        if total_mantenimientos else Decimal("0")
+    )
+    precio_medio_material = (
+        valor_inventario / materiales.count()
+        if materiales.count() else Decimal("0")
+    )
+
+    coste_por_tipo = []
+    for valor, texto in Mantenimiento.TIPOS:
+        mantenimientos_tipo = mantenimientos.filter(tipo=valor)
+        total_tipo = sum(
+            (mantenimiento.coste or Decimal("0"))
+            for mantenimiento in mantenimientos_tipo
+        )
+        if mantenimientos_tipo.exists():
+            coste_por_tipo.append({
+                "tipo": texto,
+                "total": total_tipo,
+                "mantenimientos": mantenimientos_tipo.count(),
+            })
+
+    materiales_valorados = sorted(
+        materiales_valorados,
+        key=lambda fila: fila["valor_total"],
+        reverse=True,
+    )
+    valor_por_categoria = sorted(
+        valor_por_categoria.values(),
+        key=lambda fila: fila["valor"],
+        reverse=True,
+    )
+
+    return render(request, "informes/informe_economico.html", {
+        "categorias": Categoria.objects.all(),
+        "estados": Material.ESTADOS,
+        "tipos_mantenimiento": Mantenimiento.TIPOS,
+        "categoria_id": categoria_id,
+        "estado": estado,
+        "tipo_mantenimiento": tipo_mantenimiento,
+        "fecha_desde": fecha_desde,
+        "fecha_hasta": fecha_hasta,
+        "valor_inventario": valor_inventario,
+        "coste_mantenimiento": coste_mantenimiento,
+        "resultado_economico": valor_inventario - coste_mantenimiento,
+        "precio_medio_material": precio_medio_material,
+        "coste_medio_mantenimiento": coste_medio_mantenimiento,
+        "total_materiales": materiales.count(),
+        "total_mantenimientos": total_mantenimientos,
+        "valor_por_categoria": valor_por_categoria,
+        "coste_por_tipo": coste_por_tipo,
+        "materiales_valorados": materiales_valorados,
+        "mantenimientos": mantenimientos,
     })

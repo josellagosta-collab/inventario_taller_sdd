@@ -20,4 +20,9 @@ urlpatterns = [
         views.informe_incidencias,
         name="informe_incidencias",
     ),
+    path(
+        "informes/economico/",
+        views.informe_economico,
+        name="informe_economico",
+    ),
 ]

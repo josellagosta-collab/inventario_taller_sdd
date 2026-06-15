@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from incidencias.models import Incidencia
 from inventario.models import Categoria, Material, MovimientoInventario
+from mantenimiento.models import Mantenimiento
 from prestamos.models import LineaPrestamo, Prestamo, Reserva
 from usuarios.models import PerfilUsuario
 
@@ -324,3 +325,67 @@ class InformeIncidenciasTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Fallo visible")
         self.assertNotContains(response, "Fallo cerrado")
+
+
+class InformeEconomicoTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.usuario = User.objects.create_user(
+            username="admin_economico",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.usuario)
+        self.usuario.groups.add(self.grupo_admin)
+        self.client.login(username="admin_economico", password="testpass123")
+
+        self.categoria = Categoria.objects.create(nombre="Diagnosis")
+        self.otra_categoria = Categoria.objects.create(nombre="Herramientas")
+        self.material_valorado = Material.objects.create(
+            codigo_inventario="ECO-001",
+            nombre="Equipo económico",
+            categoria=self.categoria,
+            cantidad=2,
+            precio_compra="1200.50",
+        )
+        self.material_oculto = Material.objects.create(
+            codigo_inventario="ECO-002",
+            nombre="Equipo oculto",
+            categoria=self.otra_categoria,
+            cantidad=1,
+            precio_compra="100.00",
+        )
+        Mantenimiento.objects.create(
+            material=self.material_valorado,
+            tecnico=self.usuario,
+            tipo=Mantenimiento.TIPO_PREVENTIVO,
+            fecha=timezone.now().date(),
+            descripcion="Revisión económica",
+            resultado=Mantenimiento.RESULTADO_OK,
+            coste="75.25",
+        )
+
+    def test_panel_informes_enlaza_informe_economico(self):
+        response = self.client.get(reverse("informes:panel_informes"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ver informe económico")
+        self.assertContains(response, reverse("informes:informe_economico"))
+
+    def test_informe_economico_muestra_resumen_en_euros(self):
+        response = self.client.get(reverse("informes:informe_economico"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Informe económico")
+        self.assertContains(response, "2.501,00 €")
+        self.assertContains(response, "75,25 €")
+        self.assertContains(response, "Equipo económico")
+
+    def test_informe_economico_filtra_por_categoria(self):
+        response = self.client.get(
+            reverse("informes:informe_economico"),
+            {"categoria": self.categoria.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Equipo económico")
+        self.assertNotContains(response, "Equipo oculto")
