@@ -16,6 +16,8 @@
 
 ## Cambios aceptados
 
+- **2026-06-15:** Modelo de datos documentado en `docs/MODELO_DATOS.md`, con entidades, relaciones, reglas de borrado, validaciones y copias de seguridad.
+- **2026-06-15:** API futura documentada en `docs/API_FUTURA.md`, con propuesta de endpoints, autenticación, permisos, versionado, auditoría y fases de implementación.
 - **2026-06-15:** Documentación de despliegue añadida en `docs/DESPLIEGUE.md`, con checklist de producción, estáticos, media, logs, servidor de aplicación y seguridad.
 - **2026-06-15:** Documentación de instalación añadida en `docs/INSTALACION.md`, con pasos para entorno virtual, dependencias, PostgreSQL, migraciones, grupos y comprobaciones.
 - **2026-06-15:** `README.md` actualizado como portada técnica del proyecto, con módulos, requisitos, configuración rápida, pruebas y enlaces a documentación.
@@ -453,8 +455,8 @@ Preparar el entorno de desarrollo.
 - BL-118 [Hecho] Actualizar `README.md`.
 - BL-119 [Hecho] Documentar instalación.
 - BL-120 [Hecho] Documentar despliegue.
-- BL-121 [Pendiente] Documentar base de datos.
-- BL-122 [Pendiente] Documentar API futura.
+- BL-121 [Hecho] Documentar base de datos.
+- BL-122 [Hecho] Documentar API futura.
 
 ---
 

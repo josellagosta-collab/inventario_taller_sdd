@@ -128,6 +128,7 @@ El proyecto incluye pruebas de:
 - `docs/PRD.md`: requisitos del producto.
 - `docs/SSD.md`: diseño del sistema.
 - `docs/MODELO_DATOS.md`: modelo de datos.
+- `docs/API_FUTURA.md`: propuesta de API futura.
 - `docs/BACKLOG.md`: épicas, historias de usuario y tareas técnicas.
 - `docs/JIRA_SYNC.md`: sincronización del backlog con Jira.
 
