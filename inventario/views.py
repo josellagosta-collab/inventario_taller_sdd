@@ -35,6 +35,27 @@ from prestamos.models import Prestamo, Reserva
 from auditoria.services import registrar_accion
 
 
+MATERIAL_AUDIT_FIELDS = [
+    "codigo_inventario",
+    "nombre",
+    "descripcion",
+    "categoria",
+    "subcategoria",
+    "proveedor",
+    "marca",
+    "modelo",
+    "numero_serie",
+    "cantidad",
+    "stock_minimo",
+    "precio_compra",
+    "fecha_compra",
+    "garantia_hasta",
+    "estado",
+    "ubicacion",
+    "observaciones",
+]
+
+
 @login_required
 def lista_materiales(request):
     materiales = Material.objects.annotate(
@@ -224,6 +245,42 @@ def construir_historial_material(material):
     )
 
 
+def obtener_valor_auditoria_material(material, campo):
+    valor = getattr(material, campo)
+
+    if campo == "estado":
+        return material.get_estado_display()
+
+    if valor is None or valor == "":
+        return "-"
+
+    return str(valor)
+
+
+def construir_snapshot_auditoria_material(material):
+    return {
+        campo: obtener_valor_auditoria_material(material, campo)
+        for campo in MATERIAL_AUDIT_FIELDS
+    }
+
+
+def describir_cambios_material(snapshot_anterior, material_actualizado):
+    snapshot_actual = construir_snapshot_auditoria_material(material_actualizado)
+    cambios = []
+
+    for campo in MATERIAL_AUDIT_FIELDS:
+        valor_anterior = snapshot_anterior[campo]
+        valor_actual = snapshot_actual[campo]
+
+        if valor_anterior == valor_actual:
+            continue
+
+        etiqueta = material_actualizado._meta.get_field(campo).verbose_name
+        cambios.append(f"{etiqueta}: {valor_anterior} -> {valor_actual}")
+
+    return cambios
+
+
 @login_required
 @pertenece_a_grupo("Administradores")
 def crear_material(request):
@@ -258,24 +315,29 @@ def crear_material(request):
 @pertenece_a_grupo("Administradores")
 def editar_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
+    snapshot_anterior = construir_snapshot_auditoria_material(material)
 
     if request.method == "POST":
         form = MaterialForm(request.POST, instance=material)
 
         if form.is_valid():
             material = form.save()
-            MovimientoInventario.objects.create(
-                material=material,
-                tipo="edicion",
-                usuario=request.user if request.user.is_authenticated else None,
-                descripcion="Edición de material desde la web"
-            )
-            registrar_accion(
-                request,
-                "editar",
-                "Edición de material desde la web",
-                material
-            )
+            cambios = describir_cambios_material(snapshot_anterior, material)
+
+            if cambios:
+                descripcion = "Material editado. Cambios: " + "; ".join(cambios)
+                MovimientoInventario.objects.create(
+                    material=material,
+                    tipo="edicion",
+                    usuario=request.user if request.user.is_authenticated else None,
+                    descripcion=descripcion
+                )
+                registrar_accion(
+                    request,
+                    "editar",
+                    descripcion,
+                    material
+                )
             return redirect("inventario:detalle_material", material_id=material.id)
 
     else:

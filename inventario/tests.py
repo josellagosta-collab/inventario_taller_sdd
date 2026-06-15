@@ -1,10 +1,13 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
+from auditoria.models import RegistroAuditoria
 from incidencias.models import Incidencia
+from usuarios.models import PerfilUsuario
 
 from .forms import MaterialForm
 from .models import Categoria, Material, MovimientoInventario, Subcategoria
@@ -131,3 +134,82 @@ class HistorialMaterialTests(TestCase):
         historial = construir_historial_material(self.material)
 
         self.assertEqual(historial[0]["titulo"], "Edición")
+
+
+class AuditoriaEdicionMaterialTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.usuario = User.objects.create_user(
+            username="admin",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.usuario)
+        self.usuario.groups.add(self.grupo_admin)
+        self.client.login(username="admin", password="testpass123")
+        self.categoria = Categoria.objects.create(nombre="Componentes")
+        self.subcategoria = Subcategoria.objects.create(
+            categoria=self.categoria,
+            nombre="Router",
+        )
+        self.material = Material.objects.create(
+            codigo_inventario="MAT-AUD-001",
+            nombre="Router antiguo",
+            categoria=self.categoria,
+            subcategoria=self.subcategoria,
+            cantidad=1,
+            stock_minimo=0,
+            estado="disponible",
+        )
+
+    def datos_material(self, **overrides):
+        datos = {
+            "codigo_inventario": self.material.codigo_inventario,
+            "nombre": self.material.nombre,
+            "descripcion": self.material.descripcion or "",
+            "categoria": self.categoria.id,
+            "subcategoria": self.subcategoria.id,
+            "proveedor": "",
+            "marca": self.material.marca or "",
+            "modelo": self.material.modelo or "",
+            "numero_serie": self.material.numero_serie or "",
+            "cantidad": self.material.cantidad,
+            "stock_minimo": self.material.stock_minimo,
+            "precio_compra": self.material.precio_compra or "",
+            "fecha_compra": self.material.fecha_compra or "",
+            "garantia_hasta": self.material.garantia_hasta or "",
+            "estado": self.material.estado,
+            "ubicacion": "",
+            "observaciones": self.material.observaciones or "",
+        }
+        datos.update(overrides)
+        return datos
+
+    def test_editar_material_registra_auditoria_con_cambios(self):
+        response = self.client.post(
+            reverse("inventario:editar_material", args=[self.material.id]),
+            self.datos_material(nombre="Router nuevo", cantidad=2),
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("inventario:detalle_material", args=[self.material.id]),
+        )
+        auditoria = RegistroAuditoria.objects.get(accion="editar")
+        movimiento = MovimientoInventario.objects.get(tipo="edicion")
+        self.assertIn("Material editado. Cambios:", auditoria.descripcion)
+        self.assertIn("nombre: Router antiguo -> Router nuevo", auditoria.descripcion)
+        self.assertIn("cantidad: 1 -> 2", auditoria.descripcion)
+        self.assertEqual(movimiento.descripcion, auditoria.descripcion)
+
+    def test_editar_material_sin_cambios_no_registra_auditoria(self):
+        response = self.client.post(
+            reverse("inventario:editar_material", args=[self.material.id]),
+            self.datos_material(),
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("inventario:detalle_material", args=[self.material.id]),
+        )
+        self.assertFalse(RegistroAuditoria.objects.filter(accion="editar").exists())
+        self.assertFalse(MovimientoInventario.objects.filter(tipo="edicion").exists())

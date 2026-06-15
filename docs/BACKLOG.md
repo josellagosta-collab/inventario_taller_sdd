@@ -120,7 +120,7 @@ Preparar el entorno de desarrollo.
 
 - BL-032 [Hecho] Crear formulario de edición.
 - BL-033 [Hecho] Validar datos.
-- BL-034 [Parcial] Registrar auditoría.
+- BL-034 [Hecho] Registrar auditoría.
 
 ---
 
