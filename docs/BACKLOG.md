@@ -171,7 +171,7 @@ Preparar el entorno de desarrollo.
 
 - BL-046 [Hecho] Crear modelo `Documento`.
 - BL-047 [Hecho] Crear subida de archivos.
-- BL-048 [Parcial] Crear descarga de archivos.
+- BL-048 [Hecho] Crear descarga de archivos.
 - BL-049 [Hecho] Crear eliminación de documentos.
 
 ---

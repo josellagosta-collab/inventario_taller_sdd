@@ -1,4 +1,9 @@
+from pathlib import Path
+
+from django.http import FileResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
+
+from auditoria.services import registrar_accion
 from inventario.models import Material
 from .forms import DocumentoForm
 from .models import Documento
@@ -78,3 +83,32 @@ def lista_documentos(request):
         "tipo_documento": tipo_documento,
         "tipos_documento": Documento.TIPOS_DOCUMENTO,
     })
+
+
+@login_required
+def descargar_documento(request, documento_id):
+    documento = get_object_or_404(
+        Documento.objects.select_related("material"),
+        id=documento_id,
+    )
+
+    if not documento.archivo:
+        raise Http404("El documento no tiene archivo asociado.")
+
+    ruta_archivo = Path(documento.archivo.path)
+
+    if not ruta_archivo.exists():
+        raise Http404("El archivo no existe.")
+
+    registrar_accion(
+        request,
+        "acceder",
+        f"Descarga de documento: {documento.nombre}",
+        documento,
+    )
+
+    return FileResponse(
+        documento.archivo.open("rb"),
+        as_attachment=True,
+        filename=ruta_archivo.name,
+    )

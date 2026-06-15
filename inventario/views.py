@@ -168,7 +168,7 @@ def construir_historial_material(material):
             "titulo": documento.nombre,
             "descripcion": documento.get_tipo_documento_display(),
             "usuario": documento.usuario.username if documento.usuario else "-",
-            "url": documento.archivo.url if documento.archivo else "",
+            "url": reverse("documentos:descargar_documento", args=[documento.id]),
         })
 
     for incidencia in material.incidencias.all():

@@ -130,7 +130,7 @@
                 <td>{{ documento.get_tipo_documento_display }}</td>
                 <td>{{ documento.fecha_subida }}</td>
                 <td>
-                  <a href="{{ documento.archivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver / Descargar</a>
+                  <a href="{% url 'documentos:descargar_documento' documento.id %}" class="btn btn-sm btn-outline-primary">Descargar</a>
                 </td>
                 <td>
                   <a href="{% url 'documentos:eliminar_documento' documento.id %}" class="btn btn-sm btn-outline-danger">Eliminar</a>

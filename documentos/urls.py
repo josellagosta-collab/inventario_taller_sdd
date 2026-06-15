@@ -15,6 +15,11 @@ urlpatterns = [
         name="subir_documento"
     ),
     path(
+        "documentos/<int:documento_id>/descargar/",
+        views.descargar_documento,
+        name="descargar_documento"
+    ),
+    path(
         "documentos/<int:documento_id>/eliminar/",
         views.eliminar_documento,
         name="eliminar_documento"
