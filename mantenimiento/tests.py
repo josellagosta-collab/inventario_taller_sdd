@@ -134,6 +134,34 @@ class PlanMantenimientoModelTests(TestCase):
         with self.assertRaises(ValidationError):
             plan.full_clean()
 
+    def test_estado_revision_vencido_proximo_y_al_dia(self):
+        hoy = timezone.now().date()
+        plan_vencido = PlanMantenimiento(
+            material=self.material,
+            nombre="Plan vencido",
+            frecuencia_dias=30,
+            fecha_inicio=hoy - timedelta(days=30),
+            proxima_revision=hoy - timedelta(days=1),
+        )
+        plan_proximo = PlanMantenimiento(
+            material=self.material,
+            nombre="Plan próximo",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=3),
+        )
+        plan_al_dia = PlanMantenimiento(
+            material=self.material,
+            nombre="Plan al día",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=30),
+        )
+
+        self.assertEqual(plan_vencido.estado_revision, "vencido")
+        self.assertEqual(plan_proximo.estado_revision, "proximo")
+        self.assertEqual(plan_al_dia.estado_revision, "al_dia")
+
 
 class MantenimientoFormTests(TestCase):
     def test_formulario_valido(self):
@@ -407,6 +435,60 @@ class PlanificacionMantenimientoTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Plan visible")
         self.assertNotContains(response, "Plan oculto")
+
+    def test_lista_planes_filtra_alertas_vencidas(self):
+        hoy = timezone.now().date()
+        PlanMantenimiento.objects.create(
+            material=self.material,
+            responsable=self.usuario,
+            nombre="Plan vencido",
+            frecuencia_dias=30,
+            fecha_inicio=hoy - timedelta(days=30),
+            proxima_revision=hoy - timedelta(days=1),
+        )
+        PlanMantenimiento.objects.create(
+            material=self.otro_material,
+            responsable=self.usuario,
+            nombre="Plan futuro",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=30),
+        )
+
+        response = self.client.get(
+            reverse("mantenimiento:lista_planes_mantenimiento"),
+            {"alerta": "vencidos"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Plan vencido")
+        self.assertContains(response, "Revisión vencida")
+        self.assertNotContains(response, "Plan futuro")
+
+    def test_dashboard_muestra_contadores_de_revision(self):
+        hoy = timezone.now().date()
+        PlanMantenimiento.objects.create(
+            material=self.material,
+            responsable=self.usuario,
+            nombre="Plan vencido",
+            frecuencia_dias=30,
+            fecha_inicio=hoy - timedelta(days=30),
+            proxima_revision=hoy - timedelta(days=1),
+        )
+        PlanMantenimiento.objects.create(
+            material=self.otro_material,
+            responsable=self.usuario,
+            nombre="Plan próximo",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=3),
+        )
+
+        response = self.client.get(reverse("inventario:dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Revisiones vencidas")
+        self.assertContains(response, "Revisiones próximas")
 
     def test_detalle_material_muestra_planes(self):
         hoy = timezone.now().date()

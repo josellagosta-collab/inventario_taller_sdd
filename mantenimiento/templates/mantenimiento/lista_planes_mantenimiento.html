@@ -8,6 +8,32 @@ Planes de mantenimiento
 
 <h1>Planes de mantenimiento</h1>
 
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'mantenimiento:lista_planes_mantenimiento' %}?alerta=vencidos"
+           class="text-decoration-none">
+            <div class="card text-bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Revisiones vencidas</h5>
+                    <p class="card-text fs-3">{{ total_vencidos }}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'mantenimiento:lista_planes_mantenimiento' %}?alerta=proximos"
+           class="text-decoration-none">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Próximos 7 días</h5>
+                    <p class="card-text fs-3">{{ total_proximos }}</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
 <form method="get" class="card card-body mb-4">
 
     <div class="row g-3">
@@ -75,6 +101,27 @@ Planes de mantenimiento
                    value="{{ fecha_hasta }}">
         </div>
 
+        <div class="col-md-2">
+            <label class="form-label">
+                Alerta
+            </label>
+
+            <select name="alerta" class="form-select">
+                <option value="" {% if alerta == "" %}selected{% endif %}>
+                    Todas
+                </option>
+                <option value="vencidos" {% if alerta == "vencidos" %}selected{% endif %}>
+                    Vencidas
+                </option>
+                <option value="proximos" {% if alerta == "proximos" %}selected{% endif %}>
+                    Próximas
+                </option>
+                <option value="pendientes" {% if alerta == "pendientes" %}selected{% endif %}>
+                    Pendientes
+                </option>
+            </select>
+        </div>
+
         <div class="col-md-2 d-flex align-items-end">
             <button type="submit" class="btn btn-primary w-100">
                 Filtrar
@@ -103,6 +150,7 @@ Planes de mantenimiento
             <th>Frecuencia</th>
             <th>Responsable</th>
             <th>Estado</th>
+            <th>Alerta</th>
         </tr>
     </thead>
 
@@ -153,12 +201,38 @@ Planes de mantenimiento
                         </span>
                     {% endif %}
                 </td>
+
+                <td>
+                    {% if plan.estado_revision == "vencido" %}
+                        <span class="badge bg-danger">
+                            {{ plan.estado_revision_display }}
+                        </span>
+                        <div class="text-muted small">
+                            Hace {{ plan.dias_revision_absolutos }} días
+                        </div>
+                    {% elif plan.estado_revision == "proximo" %}
+                        <span class="badge bg-warning text-dark">
+                            {{ plan.estado_revision_display }}
+                        </span>
+                        <div class="text-muted small">
+                            En {{ plan.dias_hasta_revision }} días
+                        </div>
+                    {% elif plan.estado_revision == "al_dia" %}
+                        <span class="badge bg-info text-dark">
+                            {{ plan.estado_revision_display }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            {{ plan.estado_revision_display }}
+                        </span>
+                    {% endif %}
+                </td>
             </tr>
 
         {% empty %}
 
             <tr>
-                <td colspan="7" class="text-center">
+                <td colspan="8" class="text-center">
                     No hay planes de mantenimiento registrados.
                 </td>
             </tr>
@@ -177,14 +251,14 @@ Planes de mantenimiento
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page=1&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}">
+                   href="?page=1&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}&alerta={{ alerta }}">
                     Primera
                 </a>
             </li>
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page={{ planes.previous_page_number }}&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}">
+                   href="?page={{ planes.previous_page_number }}&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}&alerta={{ alerta }}">
                     Anterior
                 </a>
             </li>
@@ -201,14 +275,14 @@ Planes de mantenimiento
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page={{ planes.next_page_number }}&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}">
+                   href="?page={{ planes.next_page_number }}&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}&alerta={{ alerta }}">
                     Siguiente
                 </a>
             </li>
 
             <li class="page-item">
                 <a class="page-link"
-                   href="?page={{ planes.paginator.num_pages }}&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}">
+                   href="?page={{ planes.paginator.num_pages }}&busqueda={{ busqueda }}&tipo={{ tipo }}&activo={{ activo }}&fecha_hasta={{ fecha_hasta }}&alerta={{ alerta }}">
                     Última
                 </a>
             </li>

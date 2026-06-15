@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -113,6 +115,8 @@ class Mantenimiento(models.Model):
 
 
 class PlanMantenimiento(models.Model):
+    DIAS_ALERTA_REVISION = 7
+
     material = models.ForeignKey(
         Material,
         on_delete=models.PROTECT,
@@ -196,3 +200,37 @@ class PlanMantenimiento(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.material}"
+
+    @property
+    def dias_hasta_revision(self):
+        return (self.proxima_revision - timezone.now().date()).days
+
+    @property
+    def dias_revision_absolutos(self):
+        return abs(self.dias_hasta_revision)
+
+    @property
+    def estado_revision(self):
+        if not self.activo:
+            return "inactivo"
+
+        hoy = timezone.now().date()
+        fecha_limite_alerta = hoy + timedelta(days=self.DIAS_ALERTA_REVISION)
+
+        if self.proxima_revision < hoy:
+            return "vencido"
+
+        if self.proxima_revision <= fecha_limite_alerta:
+            return "proximo"
+
+        return "al_dia"
+
+    @property
+    def estado_revision_display(self):
+        etiquetas = {
+            "inactivo": "Inactivo",
+            "vencido": "Revisión vencida",
+            "proximo": "Próxima revisión",
+            "al_dia": "Al día",
+        }
+        return etiquetas[self.estado_revision]

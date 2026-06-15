@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
@@ -30,6 +30,7 @@ from pathlib import Path
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 from incidencias.models import Incidencia
+from mantenimiento.models import PlanMantenimiento
 from django.db.models import F
 from prestamos.models import Prestamo, Reserva
 from auditoria.services import registrar_accion
@@ -574,6 +575,21 @@ def dashboard(request):
         estado="activa",
         fecha_prevista_recogida__lt=hoy
     ).count()
+
+    fecha_limite_alerta = hoy + timedelta(
+        days=PlanMantenimiento.DIAS_ALERTA_REVISION
+    )
+
+    revisiones_vencidas = PlanMantenimiento.objects.filter(
+        activo=True,
+        proxima_revision__lt=hoy,
+    ).count()
+
+    revisiones_proximas = PlanMantenimiento.objects.filter(
+        activo=True,
+        proxima_revision__gte=hoy,
+        proxima_revision__lte=fecha_limite_alerta,
+    ).count()
     
     ultimas_reservas = Reserva.objects.select_related(
         "usuario_reserva",
@@ -603,6 +619,8 @@ def dashboard(request):
         "reservas_canceladas": reservas_canceladas,
         "reservas_caducadas": reservas_caducadas,
         "reservas_caducadas_pendientes": reservas_caducadas_pendientes,
+        "revisiones_vencidas": revisiones_vencidas,
+        "revisiones_proximas": revisiones_proximas,
         "ultimas_reservas": ultimas_reservas,
     })
 

@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from auditoria.services import registrar_accion
 from inventario.models import Material, MovimientoInventario
@@ -63,6 +66,10 @@ def lista_mantenimientos(request):
 
 @login_required
 def lista_planes_mantenimiento(request):
+    hoy = timezone.now().date()
+    fecha_limite_alerta = hoy + timedelta(
+        days=PlanMantenimiento.DIAS_ALERTA_REVISION
+    )
     planes = PlanMantenimiento.objects.select_related(
         "material",
         "responsable",
@@ -72,6 +79,7 @@ def lista_planes_mantenimiento(request):
     tipo = request.GET.get("tipo", "")
     activo = request.GET.get("activo", "")
     fecha_hasta = request.GET.get("fecha_hasta", "")
+    alerta = request.GET.get("alerta", "")
 
     if busqueda:
         planes = planes.filter(
@@ -94,6 +102,33 @@ def lista_planes_mantenimiento(request):
     if fecha_hasta:
         planes = planes.filter(proxima_revision__lte=fecha_hasta)
 
+    total_vencidos = planes.filter(
+        activo=True,
+        proxima_revision__lt=hoy,
+    ).count()
+    total_proximos = planes.filter(
+        activo=True,
+        proxima_revision__gte=hoy,
+        proxima_revision__lte=fecha_limite_alerta,
+    ).count()
+
+    if alerta == "vencidos":
+        planes = planes.filter(
+            activo=True,
+            proxima_revision__lt=hoy,
+        )
+    elif alerta == "proximos":
+        planes = planes.filter(
+            activo=True,
+            proxima_revision__gte=hoy,
+            proxima_revision__lte=fecha_limite_alerta,
+        )
+    elif alerta == "pendientes":
+        planes = planes.filter(
+            activo=True,
+            proxima_revision__lte=fecha_limite_alerta,
+        )
+
     paginator = Paginator(planes, 10)
     numero_pagina = request.GET.get("page")
     pagina_planes = paginator.get_page(numero_pagina)
@@ -104,6 +139,9 @@ def lista_planes_mantenimiento(request):
         "tipo": tipo,
         "activo": activo,
         "fecha_hasta": fecha_hasta,
+        "alerta": alerta,
+        "total_vencidos": total_vencidos,
+        "total_proximos": total_proximos,
         "tipos": Mantenimiento.TIPOS,
     })
 

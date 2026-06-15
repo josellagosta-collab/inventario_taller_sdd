@@ -249,6 +249,7 @@
         <th>Frecuencia</th>
         <th>Responsable</th>
         <th>Estado</th>
+        <th>Alerta</th>
       </tr>
     </thead>
 
@@ -284,10 +285,35 @@
               </span>
             {% endif %}
           </td>
+          <td>
+            {% if plan.estado_revision == "vencido" %}
+              <span class="badge bg-danger">
+                {{ plan.estado_revision_display }}
+              </span>
+              <div class="text-muted small">
+                Hace {{ plan.dias_revision_absolutos }} días
+              </div>
+            {% elif plan.estado_revision == "proximo" %}
+              <span class="badge bg-warning text-dark">
+                {{ plan.estado_revision_display }}
+              </span>
+              <div class="text-muted small">
+                En {{ plan.dias_hasta_revision }} días
+              </div>
+            {% elif plan.estado_revision == "al_dia" %}
+              <span class="badge bg-info text-dark">
+                {{ plan.estado_revision_display }}
+              </span>
+            {% else %}
+              <span class="badge bg-secondary">
+                {{ plan.estado_revision_display }}
+              </span>
+            {% endif %}
+          </td>
         </tr>
       {% empty %}
         <tr>
-          <td colspan="6" class="text-center">
+          <td colspan="7" class="text-center">
             Este material todavía no tiene planes de mantenimiento.
           </td>
         </tr>

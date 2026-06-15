@@ -189,6 +189,34 @@ Dashboard
         </a>
     </div>
 
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'mantenimiento:lista_planes_mantenimiento' %}?alerta=vencidos"
+           class="text-decoration-none">
+
+            <div class="card text-bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Revisiones vencidas</h5>
+                    <p class="card-text fs-3">{{ revisiones_vencidas }}</p>
+                </div>
+            </div>
+
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'mantenimiento:lista_planes_mantenimiento' %}?alerta=proximos"
+           class="text-decoration-none">
+
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Revisiones próximas</h5>
+                    <p class="card-text fs-3">{{ revisiones_proximas }}</p>
+                </div>
+            </div>
+
+        </a>
+    </div>
+
 </div>
 
 <div class="card shadow mb-4">

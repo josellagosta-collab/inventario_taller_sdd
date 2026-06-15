@@ -318,7 +318,7 @@ Preparar el entorno de desarrollo.
 
 - BL-085 [Hecho] Crear modelo `PlanMantenimiento`.
 - BL-086 [Hecho] Crear planificación.
-- BL-087 [Pendiente] Generar alertas de revisión.
+- BL-087 [Hecho] Generar alertas de revisión.
 
 ---
 
