@@ -1,8 +1,11 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Count, F, Q, Sum
 from django.shortcuts import render
+from django.utils import timezone
 
 from inventario.models import Categoria, Material
+from prestamos.models import Prestamo
 from usuarios.decorators import pertenece_a_grupo
 
 
@@ -86,4 +89,86 @@ def informe_inventario(request):
         "valor_total": valor_total,
         "por_estado": por_estado,
         "por_categoria": por_categoria,
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def informe_prestamos(request):
+    prestamos = Prestamo.objects.select_related(
+        "usuario_receptor",
+        "profesor_responsable",
+    ).prefetch_related(
+        "lineas__material",
+    ).all()
+
+    estado = request.GET.get("estado", "")
+    usuario_receptor = request.GET.get("usuario_receptor", "")
+    profesor_responsable = request.GET.get("profesor_responsable", "")
+    retrasados = request.GET.get("retrasados", "")
+    busqueda = request.GET.get("busqueda", "")
+
+    if estado:
+        prestamos = prestamos.filter(estado=estado)
+
+    if usuario_receptor:
+        prestamos = prestamos.filter(usuario_receptor_id=usuario_receptor)
+
+    if profesor_responsable:
+        prestamos = prestamos.filter(profesor_responsable_id=profesor_responsable)
+
+    if busqueda:
+        prestamos = prestamos.filter(
+            Q(usuario_receptor__username__icontains=busqueda) |
+            Q(profesor_responsable__username__icontains=busqueda) |
+            Q(lineas__material__nombre__icontains=busqueda) |
+            Q(lineas__material__codigo_inventario__icontains=busqueda)
+        )
+
+    if retrasados == "1":
+        prestamos = prestamos.filter(
+            estado="activo",
+            fecha_prevista_devolucion__lt=timezone.now().date(),
+        )
+
+    prestamos = prestamos.distinct()
+    hoy = timezone.now().date()
+    total_prestamos = prestamos.count()
+    total_activos = prestamos.filter(estado="activo").count()
+    total_devueltos = prestamos.filter(estado="devuelto").count()
+    total_retrasados = prestamos.filter(
+        estado="activo",
+        fecha_prevista_devolucion__lt=hoy,
+    ).count()
+    total_materiales_prestados = sum(
+        linea.cantidad
+        for prestamo in prestamos
+        for linea in prestamo.lineas.all()
+    )
+
+    por_estado = prestamos.values("estado").annotate(
+        total=Count("id")
+    ).order_by("estado")
+    por_profesor = prestamos.values(
+        "profesor_responsable__username"
+    ).annotate(
+        total=Count("id")
+    ).order_by("profesor_responsable__username")
+
+    return render(request, "informes/informe_prestamos.html", {
+        "prestamos": prestamos,
+        "usuarios": User.objects.all(),
+        "estados": Prestamo.ESTADOS,
+        "estado": estado,
+        "usuario_receptor": usuario_receptor,
+        "profesor_responsable": profesor_responsable,
+        "retrasados": retrasados,
+        "busqueda": busqueda,
+        "total_prestamos": total_prestamos,
+        "total_activos": total_activos,
+        "total_devueltos": total_devueltos,
+        "total_retrasados": total_retrasados,
+        "total_materiales_prestados": total_materiales_prestados,
+        "por_estado": por_estado,
+        "por_profesor": por_profesor,
     })

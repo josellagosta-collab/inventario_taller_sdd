@@ -50,6 +50,11 @@ Informes
 
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a href="{% url 'informes:informe_prestamos' %}"
+                       class="btn btn-primary">
+                        Ver informe de préstamos
+                    </a>
+
                     <a href="{% url 'prestamos:exportar_prestamos_excel' %}"
                        class="btn btn-success">
                         Exportar préstamos Excel

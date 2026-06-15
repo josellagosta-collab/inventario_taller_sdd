@@ -159,3 +159,90 @@ class InformeInventarioTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Osciloscopio")
         self.assertNotContains(response, "Multímetro")
+
+
+class InformePrestamosTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.profesor = User.objects.create_user(
+            username="profesor_informe",
+            password="testpass123",
+        )
+        self.alumno = User.objects.create_user(username="alumno_informe")
+        PerfilUsuario.objects.get_or_create(user=self.profesor)
+        self.profesor.groups.add(self.grupo_admin)
+        self.client.login(username="profesor_informe", password="testpass123")
+
+        self.categoria = Categoria.objects.create(nombre="Redes")
+        self.material_visible = Material.objects.create(
+            codigo_inventario="PRE-INF-001",
+            nombre="Router préstamo",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.material_oculto = Material.objects.create(
+            codigo_inventario="PRE-INF-002",
+            nombre="Switch préstamo",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.prestamo_retrasado = self.crear_prestamo(
+            self.material_visible,
+            "activo",
+            timezone.now().date() - timedelta(days=2),
+        )
+        self.prestamo_futuro = self.crear_prestamo(
+            self.material_oculto,
+            "activo",
+            timezone.now().date() + timedelta(days=5),
+        )
+
+    def crear_prestamo(self, material, estado, fecha_prevista):
+        prestamo = Prestamo.objects.create(
+            usuario_receptor=self.alumno,
+            profesor_responsable=self.profesor,
+            fecha_prevista_devolucion=fecha_prevista,
+            estado=estado,
+        )
+        LineaPrestamo.objects.create(
+            prestamo=prestamo,
+            material=material,
+            cantidad=1,
+        )
+        return prestamo
+
+    def test_panel_informes_enlaza_informe_prestamos(self):
+        response = self.client.get(reverse("informes:panel_informes"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ver informe de préstamos")
+        self.assertContains(response, reverse("informes:informe_prestamos"))
+
+    def test_informe_prestamos_muestra_resumen_y_prestamos(self):
+        response = self.client.get(reverse("informes:informe_prestamos"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Informe de préstamos")
+        self.assertContains(response, "Router préstamo")
+        self.assertContains(response, "Switch préstamo")
+        self.assertContains(response, "Retrasados")
+
+    def test_informe_prestamos_filtra_por_busqueda(self):
+        response = self.client.get(
+            reverse("informes:informe_prestamos"),
+            {"busqueda": "Router"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Router préstamo")
+        self.assertNotContains(response, "Switch préstamo")
+
+    def test_informe_prestamos_filtra_retrasados(self):
+        response = self.client.get(
+            reverse("informes:informe_prestamos"),
+            {"retrasados": "1"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Router préstamo")
+        self.assertNotContains(response, "Switch préstamo")
