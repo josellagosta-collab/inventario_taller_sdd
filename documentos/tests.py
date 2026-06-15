@@ -10,6 +10,7 @@ from django.urls import reverse
 from auditoria.models import RegistroAuditoria
 from inventario.models import Categoria, Material
 
+from .forms import DocumentoForm, FotografiaForm
 from .models import Documento, Fotografia
 
 
@@ -60,6 +61,66 @@ class DocumentosModelTests(TestCase):
         self.assertEqual(str(fotografia), "Vista frontal - Switch con adjuntos")
         self.assertEqual(self.material.documentos.count(), 1)
         self.assertEqual(self.material.fotografias.count(), 1)
+
+
+class DocumentosFormTests(TestCase):
+    def test_documento_form_rechaza_archivo_vacio(self):
+        form = DocumentoForm(
+            data={
+                "nombre": "Manual vacío",
+                "descripcion": "",
+                "tipo_documento": "manual",
+            },
+            files={
+                "archivo": SimpleUploadedFile(
+                    "manual.txt",
+                    b"",
+                    content_type="text/plain",
+                ),
+            },
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("archivo", form.errors)
+
+    def test_fotografia_form_rechaza_archivo_que_no_es_imagen(self):
+        form = FotografiaForm(
+            data={
+                "titulo": "Archivo incorrecto",
+                "descripcion": "",
+            },
+            files={
+                "imagen": SimpleUploadedFile(
+                    "documento.txt",
+                    b"no es una imagen",
+                    content_type="text/plain",
+                ),
+            },
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("imagen", form.errors)
+
+    def test_fotografia_form_acepta_imagen_valida(self):
+        form = FotografiaForm(
+            data={
+                "titulo": "Vista frontal",
+                "descripcion": "",
+            },
+            files={
+                "imagen": SimpleUploadedFile(
+                    "foto.gif",
+                    (
+                        b"GIF87a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
+                        b"\xff\xff\xff,\x00\x00\x00\x00\x01\x00\x01\x00"
+                        b"\x00\x02\x02D\x01\x00;"
+                    ),
+                    content_type="image/gif",
+                ),
+            },
+        )
+
+        self.assertTrue(form.is_valid())
 
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
@@ -198,3 +259,70 @@ class FotografiaMaterialTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Vista lateral")
         self.assertContains(response, "Foto lateral")
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class DocumentosViewTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(Path(TEST_MEDIA_ROOT), ignore_errors=True)
+
+    def setUp(self):
+        self.usuario = User.objects.create_user(
+            username="admin_documentos",
+            password="testpass123",
+        )
+        grupo = self.usuario.groups.model.objects.create(name="Administradores")
+        self.usuario.groups.add(grupo)
+        self.client.login(username="admin_documentos", password="testpass123")
+        self.categoria = Categoria.objects.create(nombre="Redes")
+        self.material = Material.objects.create(
+            codigo_inventario="DOC-VIEW-001",
+            nombre="Router documentado",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.documento_visible = Documento.objects.create(
+            material=self.material,
+            nombre="Manual visible",
+            archivo=SimpleUploadedFile("manual.txt", b"manual"),
+            tipo_documento="manual",
+            usuario=self.usuario,
+        )
+        self.documento_oculto = Documento.objects.create(
+            material=self.material,
+            nombre="Factura oculta",
+            archivo=SimpleUploadedFile("factura.txt", b"factura"),
+            tipo_documento="factura",
+            usuario=self.usuario,
+        )
+
+    def test_lista_documentos_filtra_por_tipo(self):
+        response = self.client.get(
+            reverse("documentos:lista_documentos"),
+            {"tipo_documento": "manual"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Manual visible")
+        self.assertNotContains(response, "Factura oculta")
+
+    def test_subir_documento_get_muestra_formulario(self):
+        response = self.client.get(
+            reverse("documentos:subir_documento", args=[self.material.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Router documentado")
+
+    def test_eliminar_documento_get_muestra_confirmacion(self):
+        response = self.client.get(
+            reverse(
+                "documentos:eliminar_documento",
+                args=[self.documento_visible.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Manual visible")

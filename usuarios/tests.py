@@ -5,6 +5,9 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
+from inventario.models import Categoria, Material
+
+from .forms import RolForm, UsuarioCrearForm, UsuarioEditarForm
 from .models import PerfilUsuario
 
 
@@ -104,6 +107,94 @@ class PerfilUsuarioTests(TestCase):
         self.assertTrue(perfil.puede_recibir_prestamos)
 
 
+class UsuariosFormTests(TestCase):
+    def test_usuario_crear_form_rechaza_passwords_distintas(self):
+        form = UsuarioCrearForm(data={
+            "username": "usuario_form",
+            "first_name": "",
+            "last_name": "",
+            "email": "usuario@example.com",
+            "is_active": "on",
+            "password1": "testpass123",
+            "password2": "otra-pass",
+            "tipo_usuario": PerfilUsuario.TIPO_PROFESOR,
+            "departamento": "",
+            "telefono": "",
+            "puede_recibir_prestamos": "on",
+            "observaciones": "",
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("password2", form.errors)
+
+    def test_usuario_crear_form_guarda_perfil_y_grupo_admin(self):
+        form = UsuarioCrearForm(data={
+            "username": "admin_form",
+            "first_name": "Admin",
+            "last_name": "Form",
+            "email": "admin@example.com",
+            "is_active": "on",
+            "password1": "testpass123",
+            "password2": "testpass123",
+            "es_administrador": "on",
+            "tipo_usuario": PerfilUsuario.TIPO_ADMINISTRADOR,
+            "departamento": "Sistemas",
+            "telefono": "600000000",
+            "puede_recibir_prestamos": "on",
+            "observaciones": "Usuario creado desde test",
+        })
+
+        self.assertTrue(form.is_valid())
+        usuario = form.save()
+        perfil = PerfilUsuario.objects.get(user=usuario)
+
+        self.assertTrue(usuario.check_password("testpass123"))
+        self.assertTrue(usuario.groups.filter(name="Administradores").exists())
+        self.assertEqual(perfil.tipo_usuario, PerfilUsuario.TIPO_ADMINISTRADOR)
+        self.assertEqual(perfil.departamento, "Sistemas")
+
+    def test_usuario_editar_form_actualiza_perfil_y_quita_admin(self):
+        grupo = Group.objects.create(name="Administradores")
+        usuario = User.objects.create_user(username="usuario_editar")
+        usuario.groups.add(grupo)
+        perfil, _ = PerfilUsuario.objects.get_or_create(user=usuario)
+        perfil.tipo_usuario = PerfilUsuario.TIPO_PROFESOR
+        perfil.departamento = "Inicial"
+        perfil.save()
+
+        form = UsuarioEditarForm(
+            data={
+                "first_name": "Nombre",
+                "last_name": "Apellido",
+                "email": "editado@example.com",
+                "is_active": "on",
+                "tipo_usuario": PerfilUsuario.TIPO_TECNICO,
+                "departamento": "Hardware",
+                "telefono": "611111111",
+                "puede_recibir_prestamos": "",
+                "observaciones": "Actualizado",
+            },
+            instance=usuario,
+        )
+
+        self.assertTrue(form.is_valid())
+        usuario = form.save()
+        usuario.refresh_from_db()
+        perfil.refresh_from_db()
+
+        self.assertFalse(usuario.groups.filter(name="Administradores").exists())
+        self.assertEqual(perfil.tipo_usuario, PerfilUsuario.TIPO_TECNICO)
+        self.assertEqual(perfil.departamento, "Hardware")
+
+    def test_rol_form_permite_crear_rol_sin_permisos(self):
+        form = RolForm(data={
+            "name": "Inventario lectura",
+            "permissions": [],
+        })
+
+        self.assertTrue(form.is_valid())
+
+
 class LogoutTests(TestCase):
     def test_logout_redirige_a_pagina_de_sesion_cerrada(self):
         User.objects.create_user(
@@ -159,3 +250,79 @@ class InicializarGruposCommandTests(TestCase):
         self.assertTrue(
             usuario.groups.filter(name="Administradores").exists()
         )
+
+
+class PermisosViewsTests(TestCase):
+    def setUp(self):
+        self.usuario = User.objects.create_user(
+            username="usuario_normal",
+            password="testpass123",
+        )
+        self.superusuario = User.objects.create_superuser(
+            username="superadmin",
+            password="testpass123",
+            email="superadmin@example.com",
+        )
+        self.categoria = Categoria.objects.create(nombre="Permisos")
+        self.material = Material.objects.create(
+            codigo_inventario="PERM-001",
+            nombre="Material permisos",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+
+    def urls_admin(self):
+        return [
+            reverse("usuarios:lista_usuarios"),
+            reverse("usuarios:lista_roles"),
+            reverse("inventario:crear_material"),
+            reverse("inventario:editar_material", args=[self.material.id]),
+            reverse("inventario:trasladar_material", args=[self.material.id]),
+            reverse("inventario:retirar_material", args=[self.material.id]),
+            reverse("ubicaciones:crear_ubicacion"),
+            reverse("documentos:subir_documento", args=[self.material.id]),
+            reverse("prestamos:crear_prestamo"),
+            reverse("incidencias:crear_incidencia", args=[self.material.id]),
+            reverse("mantenimiento:crear_mantenimiento_material", args=[self.material.id]),
+            reverse("auditoria:lista_auditoria"),
+            reverse("informes:panel_informes"),
+        ]
+
+    def test_usuario_autenticado_sin_grupo_admin_recibe_403_en_vistas_admin(self):
+        self.client.login(username="usuario_normal", password="testpass123")
+
+        for url in self.urls_admin():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 403)
+
+    def test_usuario_anonimo_redirige_a_login_en_vistas_admin(self):
+        for url in self.urls_admin():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 302)
+                self.assertIn("/login/", response["Location"])
+
+    def test_superusuario_accede_a_vistas_admin_sin_grupo(self):
+        self.client.login(username="superadmin", password="testpass123")
+
+        for url in self.urls_admin():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+
+    def test_usuario_autenticado_accede_a_vistas_de_consulta(self):
+        self.client.login(username="usuario_normal", password="testpass123")
+
+        urls_consulta = [
+            reverse("inventario:lista_materiales"),
+            reverse("inventario:detalle_material", args=[self.material.id]),
+            reverse("prestamos:lista_prestamos"),
+            reverse("incidencias:lista_incidencias"),
+            reverse("documentos:lista_documentos"),
+        ]
+
+        for url in urls_consulta:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)

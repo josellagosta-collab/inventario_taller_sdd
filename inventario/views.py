@@ -62,9 +62,12 @@ MATERIAL_AUDIT_FIELDS = [
 def lista_materiales(request):
     materiales = Material.objects.annotate(
         total_documentos=Count("documentos", distinct=True)
+    ).select_related(
+        "categoria",
+        "ubicacion",
     ).prefetch_related(
         "reservas"
-    )
+    ).order_by("nombre")
 
     categorias = Categoria.objects.all()
 

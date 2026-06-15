@@ -1,13 +1,16 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import Group, User
+from django.db import connection
 from django.db import IntegrityError
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
 from auditoria.models import RegistroAuditoria
 from incidencias.models import Incidencia
+from prestamos.models import LineaPrestamo, Prestamo, Reserva
 from ubicaciones.models import Aula, Edificio, Ubicacion
 from usuarios.models import PerfilUsuario
 
@@ -336,3 +339,258 @@ class TrasladoMaterialTests(TestCase):
 
         auditoria = RegistroAuditoria.objects.get(accion="editar")
         self.assertEqual(auditoria.descripcion, movimiento.descripcion)
+
+
+class FlujosIntegracionTests(TestCase):
+    def setUp(self):
+        self.grupo_admin = Group.objects.create(name="Administradores")
+        self.admin = User.objects.create_user(
+            username="admin_integracion",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.admin)
+        self.admin.groups.add(self.grupo_admin)
+        self.alumno = User.objects.create_user(username="alumno_integracion")
+        self.client.login(username="admin_integracion", password="testpass123")
+
+        self.categoria = Categoria.objects.create(nombre="Integración")
+        self.material = Material.objects.create(
+            codigo_inventario="INT-001",
+            nombre="Material integrado",
+            categoria=self.categoria,
+            cantidad=1,
+            estado="disponible",
+        )
+
+    def test_flujo_prestamo_y_devolucion_actualiza_inventario_movimientos_y_auditoria(self):
+        response = self.client.post(
+            reverse("prestamos:crear_prestamo"),
+            {
+                "usuario_receptor": self.alumno.id,
+                "profesor_responsable": self.admin.id,
+                "fecha_prevista_devolucion": (
+                    timezone.now().date() + timedelta(days=7)
+                ).isoformat(),
+                "observaciones": "Préstamo de integración",
+                "material": self.material.id,
+                "cantidad": 1,
+            },
+        )
+
+        self.assertRedirects(response, reverse("prestamos:lista_prestamos"))
+        prestamo = Prestamo.objects.get(usuario_receptor=self.alumno)
+        self.material.refresh_from_db()
+
+        self.assertEqual(self.material.estado, "prestado")
+        self.assertTrue(
+            LineaPrestamo.objects.filter(
+                prestamo=prestamo,
+                material=self.material,
+                cantidad=1,
+            ).exists()
+        )
+        self.assertTrue(
+            MovimientoInventario.objects.filter(
+                material=self.material,
+                tipo="prestamo",
+            ).exists()
+        )
+        self.assertTrue(
+            RegistroAuditoria.objects.filter(
+                accion="prestar",
+                descripcion__icontains=f"Préstamo ID: {prestamo.id}",
+            ).exists()
+        )
+
+        response = self.client.post(
+            reverse("prestamos:devolver_prestamo", args=[prestamo.id])
+        )
+
+        self.assertRedirects(response, reverse("prestamos:lista_prestamos"))
+        prestamo.refresh_from_db()
+        self.material.refresh_from_db()
+
+        self.assertEqual(prestamo.estado, "devuelto")
+        self.assertEqual(self.material.estado, "disponible")
+        self.assertTrue(
+            MovimientoInventario.objects.filter(
+                material=self.material,
+                tipo="devolucion",
+            ).exists()
+        )
+        self.assertTrue(
+            RegistroAuditoria.objects.filter(
+                accion="devolver",
+                descripcion__icontains=f"Préstamo ID: {prestamo.id}",
+            ).exists()
+        )
+
+    def test_flujo_reserva_y_conversion_en_prestamo(self):
+        response = self.client.post(
+            reverse("prestamos:crear_reserva"),
+            {
+                "usuario_reserva": self.alumno.id,
+                "profesor_responsable": self.admin.id,
+                "material": self.material.id,
+                "cantidad": 1,
+                "fecha_prevista_recogida": (
+                    timezone.now().date() + timedelta(days=3)
+                ).isoformat(),
+                "observaciones": "Reserva de integración",
+            },
+        )
+
+        self.assertRedirects(response, reverse("prestamos:lista_reservas"))
+        reserva = Reserva.objects.get(usuario_reserva=self.alumno)
+        self.material.refresh_from_db()
+
+        self.assertEqual(reserva.estado, "activa")
+        self.assertEqual(self.material.estado, "reservado")
+        self.assertTrue(
+            RegistroAuditoria.objects.filter(
+                accion="reservar",
+                descripcion__icontains=f"Reserva ID: {reserva.id}",
+            ).exists()
+        )
+
+        response = self.client.post(
+            reverse("prestamos:convertir_reserva_en_prestamo", args=[reserva.id])
+        )
+
+        prestamo = Prestamo.objects.get(usuario_receptor=self.alumno)
+        self.assertRedirects(
+            response,
+            reverse("prestamos:detalle_prestamo", args=[prestamo.id]),
+        )
+        reserva.refresh_from_db()
+        self.material.refresh_from_db()
+
+        self.assertEqual(reserva.estado, "convertida")
+        self.assertEqual(self.material.estado, "prestado")
+        self.assertTrue(
+            LineaPrestamo.objects.filter(
+                prestamo=prestamo,
+                material=self.material,
+            ).exists()
+        )
+        self.assertTrue(
+            RegistroAuditoria.objects.filter(
+                accion="convertir_reserva",
+                descripcion__icontains=f"Reserva ID: {reserva.id}",
+            ).exists()
+        )
+
+    def test_flujo_incidencia_y_resolucion_actualiza_estado_y_movimientos(self):
+        response = self.client.post(
+            reverse("incidencias:crear_incidencia", args=[self.material.id]),
+            {
+                "titulo": "Fallo integrado",
+                "descripcion": "El material falla durante la prueba.",
+                "prioridad": "alta",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("inventario:detalle_material", args=[self.material.id]),
+        )
+        incidencia = Incidencia.objects.get(titulo="Fallo integrado")
+        self.material.refresh_from_db()
+
+        self.assertEqual(self.material.estado, "averiado")
+        self.assertTrue(
+            MovimientoInventario.objects.filter(
+                material=self.material,
+                descripcion__icontains="Incidencia creada",
+            ).exists()
+        )
+
+        response = self.client.post(
+            reverse("incidencias:resolver_incidencia", args=[incidencia.id]),
+            {
+                "solucion": "Se sustituye el componente defectuoso.",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("incidencias:detalle_incidencia", args=[incidencia.id]),
+        )
+        incidencia.refresh_from_db()
+        self.material.refresh_from_db()
+
+        self.assertEqual(incidencia.estado, "cerrada")
+        self.assertEqual(self.material.estado, "disponible")
+        self.assertTrue(
+            MovimientoInventario.objects.filter(
+                material=self.material,
+                descripcion__icontains="Incidencia resuelta",
+            ).exists()
+        )
+
+
+class RendimientoInventarioTests(TestCase):
+    def setUp(self):
+        self.usuario = User.objects.create_user(
+            username="usuario_rendimiento",
+            password="testpass123",
+        )
+        self.client.force_login(self.usuario)
+        self.categoria = Categoria.objects.create(nombre="Rendimiento")
+        self.materiales = [
+            Material.objects.create(
+                codigo_inventario=f"PERF-{indice:03d}",
+                nombre=f"Material rendimiento {indice}",
+                categoria=self.categoria,
+                cantidad=1,
+                stock_minimo=0,
+            )
+            for indice in range(30)
+        ]
+
+    def assert_consultas_maximas(self, maximo, callback):
+        with CaptureQueriesContext(connection) as contexto:
+            response = callback()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(
+            len(contexto),
+            maximo,
+            f"Se ejecutaron {len(contexto)} consultas, máximo esperado {maximo}.",
+        )
+
+    def test_lista_materiales_mantiene_consultas_acotadas_con_muchos_registros(self):
+        for indice, material in enumerate(self.materiales[:15]):
+            Reserva.objects.create(
+                usuario_reserva=self.usuario,
+                profesor_responsable=self.usuario,
+                material=material,
+                cantidad=1,
+                fecha_prevista_recogida=timezone.now().date() + timedelta(days=1),
+                estado="activa" if indice % 2 == 0 else "cancelada",
+            )
+
+        self.assert_consultas_maximas(
+            12,
+            lambda: self.client.get(reverse("inventario:lista_materiales")),
+        )
+
+    def test_dashboard_mantiene_consultas_acotadas_con_actividad(self):
+        for material in self.materiales[:10]:
+            MovimientoInventario.objects.create(
+                material=material,
+                tipo="alta",
+                usuario=self.usuario,
+                descripcion="Alta de rendimiento",
+            )
+            Incidencia.objects.create(
+                material=material,
+                usuario=self.usuario,
+                titulo=f"Incidencia {material.codigo_inventario}",
+                descripcion="Incidencia de rendimiento",
+            )
+
+        self.assert_consultas_maximas(
+            35,
+            lambda: self.client.get(reverse("inventario:dashboard")),
+        )

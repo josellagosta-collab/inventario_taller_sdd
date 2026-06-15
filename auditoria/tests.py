@@ -32,6 +32,39 @@ class AuditoriaTimezoneTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "15/06/2026 12:00")
 
+    def test_lista_auditoria_filtra_por_accion(self):
+        RegistroAuditoria.objects.create(
+            usuario=self.usuario,
+            accion="crear",
+            descripcion="Registro visible",
+        )
+        RegistroAuditoria.objects.create(
+            usuario=self.usuario,
+            accion="eliminar",
+            descripcion="Registro oculto",
+        )
+
+        response = self.client.get(
+            reverse("auditoria:lista_auditoria"),
+            {"accion": "crear"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Registro visible")
+        self.assertNotContains(response, "Registro oculto")
+
+    def test_lista_auditoria_deniega_usuario_sin_grupo_admin(self):
+        self.client.logout()
+        User.objects.create_user(
+            username="usuario_sin_admin",
+            password="testpass123",
+        )
+        self.client.login(username="usuario_sin_admin", password="testpass123")
+
+        response = self.client.get(reverse("auditoria:lista_auditoria"))
+
+        self.assertEqual(response.status_code, 403)
+
 
 class RegistroAuditoriaModelTests(TestCase):
     def test_str_usa_sistema_cuando_no_hay_usuario(self):

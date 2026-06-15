@@ -16,6 +16,11 @@
 
 ## Cambios aceptados
 
+- **2026-06-15:** Pruebas de rendimiento añadidas para listados y dashboard. Optimizado `lista_materiales` con `select_related` y orden explícito para evitar N+1 y paginación inconsistente.
+- **2026-06-15:** Pruebas de integración añadidas para préstamo/devolución, reserva/conversión e incidencia/resolución, validando inventario, movimientos y auditoría.
+- **2026-06-15:** Pruebas de permisos añadidas para vistas administrativas y vistas de consulta. Validan anónimos, usuarios sin grupo `Administradores` y superusuarios.
+- **2026-06-15:** Pruebas de vistas añadidas para ubicaciones, documentos, incidencias y auditoría. Suite focalizada validada con 34 tests OK.
+- **2026-06-15:** Pruebas de formularios añadidas para usuarios, ubicaciones, préstamos, incidencias y documentos. Suite validada con 80 tests OK.
 - **2026-06-15:** Pruebas de modelos añadidas para inventario, ubicaciones, préstamos, incidencias, documentos y auditoría. Suite validada con 65 tests OK.
 - **2026-06-15:** Permisos base configurados por grupos. El comando `inicializar_grupos` crea y actualiza `Administradores`, `Profesores`, `Técnicos` y `Alumnos` con permisos de modelo coherentes.
 - **2026-06-15:** Dashboard actualizado con contador de revisiones pendientes, enlazado al filtro de planes de mantenimiento pendientes.
@@ -424,11 +429,11 @@ Preparar el entorno de desarrollo.
 ### Tareas
 
 - BL-112 [Hecho] Crear pruebas de modelos.
-- BL-113 [Pendiente] Crear pruebas de formularios.
-- BL-114 [Pendiente] Crear pruebas de vistas.
-- BL-115 [Pendiente] Crear pruebas de permisos.
-- BL-116 [Pendiente] Crear pruebas de integración.
-- BL-117 [Pendiente] Crear pruebas de rendimiento.
+- BL-113 [Hecho] Crear pruebas de formularios.
+- BL-114 [Hecho] Crear pruebas de vistas.
+- BL-115 [Hecho] Crear pruebas de permisos.
+- BL-116 [Hecho] Crear pruebas de integración.
+- BL-117 [Hecho] Crear pruebas de rendimiento.
 
 ---
 
