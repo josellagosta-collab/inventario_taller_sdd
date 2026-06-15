@@ -7,8 +7,8 @@ from auditoria.services import registrar_accion
 from inventario.models import Material, MovimientoInventario
 from usuarios.decorators import pertenece_a_grupo
 
-from .forms import MantenimientoForm
-from .models import Mantenimiento
+from .forms import MantenimientoForm, PlanMantenimientoForm
+from .models import Mantenimiento, PlanMantenimiento
 
 
 @login_required
@@ -62,6 +62,53 @@ def lista_mantenimientos(request):
 
 
 @login_required
+def lista_planes_mantenimiento(request):
+    planes = PlanMantenimiento.objects.select_related(
+        "material",
+        "responsable",
+    ).all()
+
+    busqueda = request.GET.get("busqueda", "")
+    tipo = request.GET.get("tipo", "")
+    activo = request.GET.get("activo", "")
+    fecha_hasta = request.GET.get("fecha_hasta", "")
+
+    if busqueda:
+        planes = planes.filter(
+            Q(nombre__icontains=busqueda) |
+            Q(material__nombre__icontains=busqueda) |
+            Q(material__codigo_inventario__icontains=busqueda) |
+            Q(responsable__username__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda) |
+            Q(observaciones__icontains=busqueda)
+        )
+
+    if tipo:
+        planes = planes.filter(tipo=tipo)
+
+    if activo == "1":
+        planes = planes.filter(activo=True)
+    elif activo == "0":
+        planes = planes.filter(activo=False)
+
+    if fecha_hasta:
+        planes = planes.filter(proxima_revision__lte=fecha_hasta)
+
+    paginator = Paginator(planes, 10)
+    numero_pagina = request.GET.get("page")
+    pagina_planes = paginator.get_page(numero_pagina)
+
+    return render(request, "mantenimiento/lista_planes_mantenimiento.html", {
+        "planes": pagina_planes,
+        "busqueda": busqueda,
+        "tipo": tipo,
+        "activo": activo,
+        "fecha_hasta": fecha_hasta,
+        "tipos": Mantenimiento.TIPOS,
+    })
+
+
+@login_required
 @pertenece_a_grupo("Administradores")
 def crear_mantenimiento_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
@@ -100,6 +147,45 @@ def crear_mantenimiento_material(request, material_id):
         form = MantenimientoForm()
 
     return render(request, "mantenimiento/form_mantenimiento.html", {
+        "form": form,
+        "material": material,
+    })
+
+
+@login_required
+@pertenece_a_grupo("Administradores")
+def crear_plan_mantenimiento_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.method == "POST":
+        form = PlanMantenimientoForm(request.POST)
+
+        if form.is_valid():
+            plan = form.save(commit=False)
+            plan.material = material
+
+            if request.user.is_authenticated:
+                plan.responsable = request.user
+
+            plan.save()
+
+            descripcion = (
+                f"Plan de mantenimiento creado. "
+                f"Nombre: {plan.nombre}. "
+                f"Tipo: {plan.get_tipo_display()}. "
+                f"Próxima revisión: {plan.proxima_revision}."
+            )
+            registrar_accion(
+                request,
+                "crear",
+                descripcion,
+                plan,
+            )
+            return redirect("inventario:detalle_material", material_id=material.id)
+    else:
+        form = PlanMantenimientoForm()
+
+    return render(request, "mantenimiento/form_plan_mantenimiento.html", {
         "form": form,
         "material": material,
     })

@@ -11,7 +11,7 @@ from inventario.models import Categoria, Material
 from inventario.models import MovimientoInventario
 from usuarios.models import PerfilUsuario
 
-from .forms import MantenimientoForm
+from .forms import MantenimientoForm, PlanMantenimientoForm
 from .models import Mantenimiento, PlanMantenimiento
 
 
@@ -164,6 +164,39 @@ class MantenimientoFormTests(TestCase):
         self.assertIn("coste", form.errors)
 
 
+class PlanMantenimientoFormTests(TestCase):
+    def test_formulario_plan_valido(self):
+        hoy = timezone.now().date()
+        form = PlanMantenimientoForm(data={
+            "nombre": "Revisión trimestral",
+            "tipo": Mantenimiento.TIPO_PREVENTIVO,
+            "descripcion": "Comprobación preventiva",
+            "frecuencia_dias": "90",
+            "fecha_inicio": hoy.isoformat(),
+            "proxima_revision": (hoy + timedelta(days=90)).isoformat(),
+            "activo": "on",
+            "observaciones": "",
+        })
+
+        self.assertTrue(form.is_valid())
+
+    def test_formulario_plan_rechaza_frecuencia_cero(self):
+        hoy = timezone.now().date()
+        form = PlanMantenimientoForm(data={
+            "nombre": "Plan incorrecto",
+            "tipo": Mantenimiento.TIPO_PREVENTIVO,
+            "descripcion": "",
+            "frecuencia_dias": "0",
+            "fecha_inicio": hoy.isoformat(),
+            "proxima_revision": (hoy + timedelta(days=30)).isoformat(),
+            "activo": "on",
+            "observaciones": "",
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("frecuencia_dias", form.errors)
+
+
 class CrearMantenimientoMaterialTests(TestCase):
     def setUp(self):
         self.categoria = Categoria.objects.create(nombre="Equipos")
@@ -289,3 +322,107 @@ class HistoricoMantenimientoTests(TestCase):
         self.assertContains(response, "Histórico de mantenimiento")
         self.assertContains(response, "Cambio de componente")
         self.assertContains(response, "Mantenimiento")
+
+
+class PlanificacionMantenimientoTests(TestCase):
+    def setUp(self):
+        self.categoria = Categoria.objects.create(nombre="Equipos")
+        self.material = Material.objects.create(
+            codigo_inventario="PLAN-VIEW-001",
+            nombre="Equipo planificado",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.otro_material = Material.objects.create(
+            codigo_inventario="PLAN-VIEW-002",
+            nombre="Equipo sin filtrar",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.usuario = User.objects.create_user(
+            username="admin_plan",
+            password="testpass123",
+        )
+        PerfilUsuario.objects.get_or_create(user=self.usuario)
+        grupo = self.usuario.groups.model.objects.create(name="Administradores")
+        self.usuario.groups.add(grupo)
+        self.client.login(username="admin_plan", password="testpass123")
+
+    def test_crear_plan_desde_material(self):
+        hoy = timezone.now().date()
+
+        response = self.client.post(
+            reverse(
+                "mantenimiento:crear_plan_mantenimiento_material",
+                args=[self.material.id],
+            ),
+            {
+                "nombre": "Revisión mensual",
+                "tipo": Mantenimiento.TIPO_PREVENTIVO,
+                "descripcion": "Limpieza y comprobación",
+                "frecuencia_dias": "30",
+                "fecha_inicio": hoy.isoformat(),
+                "proxima_revision": (hoy + timedelta(days=30)).isoformat(),
+                "activo": "on",
+                "observaciones": "Plan inicial",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("inventario:detalle_material", args=[self.material.id]),
+        )
+        plan = PlanMantenimiento.objects.get(material=self.material)
+        self.assertEqual(plan.responsable, self.usuario)
+        self.assertEqual(plan.nombre, "Revisión mensual")
+        self.assertTrue(RegistroAuditoria.objects.filter(
+            accion="crear",
+            descripcion__icontains="Plan de mantenimiento creado",
+        ).exists())
+
+    def test_lista_planes_filtra_por_material(self):
+        hoy = timezone.now().date()
+        PlanMantenimiento.objects.create(
+            material=self.material,
+            responsable=self.usuario,
+            nombre="Plan visible",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=30),
+        )
+        PlanMantenimiento.objects.create(
+            material=self.otro_material,
+            responsable=self.usuario,
+            nombre="Plan oculto",
+            frecuencia_dias=60,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=60),
+        )
+
+        response = self.client.get(
+            reverse("mantenimiento:lista_planes_mantenimiento"),
+            {"busqueda": "PLAN-VIEW-001"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Plan visible")
+        self.assertNotContains(response, "Plan oculto")
+
+    def test_detalle_material_muestra_planes(self):
+        hoy = timezone.now().date()
+        PlanMantenimiento.objects.create(
+            material=self.material,
+            responsable=self.usuario,
+            nombre="Plan en detalle",
+            frecuencia_dias=30,
+            fecha_inicio=hoy,
+            proxima_revision=hoy + timedelta(days=30),
+        )
+
+        response = self.client.get(
+            reverse("inventario:detalle_material", args=[self.material.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Planes de mantenimiento")
+        self.assertContains(response, "Plan en detalle")

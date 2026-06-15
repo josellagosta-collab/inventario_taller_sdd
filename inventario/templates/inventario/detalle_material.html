@@ -139,6 +139,8 @@
 
       <a href="{% url 'mantenimiento:crear_mantenimiento_material' material.id %}" class="btn btn-primary">Registrar mantenimiento</a>
 
+      <a href="{% url 'mantenimiento:crear_plan_mantenimiento_material' material.id %}" class="btn btn-outline-primary">Planificar mantenimiento</a>
+
       <a href="{% url 'inventario:retirar_material' material.id %}" class="btn btn-danger">Retirar material</a>
 
       {% if material.estado == "disponible" %}
@@ -232,6 +234,72 @@
       <a href="{% url 'inventario:lista_materiales' %}" class="btn btn-secondary">Volver al listado</a>
     </div>
   </div>
+
+<hr>
+
+<h2>Planes de mantenimiento</h2>
+
+<div class="table-responsive">
+  <table class="table table-striped table-bordered align-middle">
+    <thead>
+      <tr>
+        <th>Próxima revisión</th>
+        <th>Plan</th>
+        <th>Tipo</th>
+        <th>Frecuencia</th>
+        <th>Responsable</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for plan in material.planes_mantenimiento.all %}
+        <tr>
+          <td>{{ plan.proxima_revision }}</td>
+          <td>
+            {{ plan.nombre }}
+            {% if plan.descripcion %}
+              <div class="text-muted small">
+                {{ plan.descripcion }}
+              </div>
+            {% endif %}
+          </td>
+          <td>{{ plan.get_tipo_display }}</td>
+          <td>{{ plan.frecuencia_dias }} días</td>
+          <td>
+            {% if plan.responsable %}
+              {{ plan.responsable.username }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if plan.activo %}
+              <span class="badge bg-success">
+                Activo
+              </span>
+            {% else %}
+              <span class="badge bg-secondary">
+                Inactivo
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">
+            Este material todavía no tiene planes de mantenimiento.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<a href="{% url 'mantenimiento:lista_planes_mantenimiento' %}?busqueda={{ material.codigo_inventario }}"
+   class="btn btn-outline-primary mb-3">
+  Ver planes filtrados
+</a>
 
 <hr>
 

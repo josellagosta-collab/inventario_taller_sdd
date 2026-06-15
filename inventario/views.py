@@ -126,6 +126,7 @@ def detalle_material(request, material_id):
             "fotografias__usuario",
             "incidencias__usuario",
             "mantenimientos__tecnico",
+            "planes_mantenimiento__responsable",
             "reservas__usuario_reserva",
             "lineas_prestamo__prestamo__usuario_receptor",
             "lineas_prestamo__prestamo__profesor_responsable",
