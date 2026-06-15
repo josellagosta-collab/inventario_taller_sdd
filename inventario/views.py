@@ -125,6 +125,7 @@ def detalle_material(request, material_id):
             "documentos__usuario",
             "fotografias__usuario",
             "incidencias__usuario",
+            "mantenimientos__tecnico",
             "reservas__usuario_reserva",
             "lineas_prestamo__prestamo__usuario_receptor",
             "lineas_prestamo__prestamo__profesor_responsable",
@@ -204,6 +205,30 @@ def construir_historial_material(material):
                 "usuario": incidencia.usuario.username if incidencia.usuario else "-",
                 "url": reverse("incidencias:detalle_incidencia", args=[incidencia.id]),
             })
+
+    for mantenimiento in material.mantenimientos.all():
+        descripcion = (
+            f"{mantenimiento.get_resultado_display()} - "
+            f"{mantenimiento.descripcion}"
+        )
+
+        if mantenimiento.proxima_revision:
+            descripcion = (
+                f"{descripcion}. Próxima revisión: "
+                f"{mantenimiento.proxima_revision}"
+            )
+
+        historial.append({
+            "fecha": convertir_fecha_historial(mantenimiento.fecha),
+            "tipo": "Mantenimiento",
+            "titulo": mantenimiento.get_tipo_display(),
+            "descripcion": descripcion,
+            "usuario": mantenimiento.tecnico.username if mantenimiento.tecnico else "-",
+            "url": (
+                f"{reverse('mantenimiento:lista_mantenimientos')}"
+                f"?busqueda={material.codigo_inventario}"
+            ),
+        })
 
     for reserva in material.reservas.all():
         historial.append({

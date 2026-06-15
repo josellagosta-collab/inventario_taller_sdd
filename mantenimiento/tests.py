@@ -161,3 +161,75 @@ class CrearMantenimientoMaterialTests(TestCase):
             accion="crear",
             descripcion__icontains="Mantenimiento registrado",
         ).exists())
+
+
+class HistoricoMantenimientoTests(TestCase):
+    def setUp(self):
+        self.categoria = Categoria.objects.create(nombre="Equipos")
+        self.material = Material.objects.create(
+            codigo_inventario="HIST-MANT-001",
+            nombre="Equipo con histórico",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.otro_material = Material.objects.create(
+            codigo_inventario="HIST-MANT-002",
+            nombre="Equipo auxiliar",
+            categoria=self.categoria,
+            cantidad=1,
+        )
+        self.usuario = User.objects.create_user(
+            username="tecnico_historial",
+            password="testpass123",
+        )
+        self.client.login(username="tecnico_historial", password="testpass123")
+
+    def test_lista_mantenimientos_filtra_por_material(self):
+        hoy = timezone.now().date()
+        Mantenimiento.objects.create(
+            material=self.material,
+            tecnico=self.usuario,
+            tipo=Mantenimiento.TIPO_PREVENTIVO,
+            fecha=hoy,
+            descripcion="Revisión visible",
+            resultado=Mantenimiento.RESULTADO_OK,
+            coste=0,
+        )
+        Mantenimiento.objects.create(
+            material=self.otro_material,
+            tecnico=self.usuario,
+            tipo=Mantenimiento.TIPO_CORRECTIVO,
+            fecha=hoy,
+            descripcion="Revisión oculta",
+            resultado=Mantenimiento.RESULTADO_REPARADO,
+            coste=10,
+        )
+
+        response = self.client.get(
+            reverse("mantenimiento:lista_mantenimientos"),
+            {"busqueda": "HIST-MANT-001"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Revisión visible")
+        self.assertNotContains(response, "Revisión oculta")
+
+    def test_detalle_material_muestra_historico_de_mantenimiento(self):
+        Mantenimiento.objects.create(
+            material=self.material,
+            tecnico=self.usuario,
+            tipo=Mantenimiento.TIPO_CORRECTIVO,
+            fecha=timezone.now().date(),
+            descripcion="Cambio de componente",
+            resultado=Mantenimiento.RESULTADO_REPARADO,
+            coste=25,
+        )
+
+        response = self.client.get(
+            reverse("inventario:detalle_material", args=[self.material.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Histórico de mantenimiento")
+        self.assertContains(response, "Cambio de componente")
+        self.assertContains(response, "Mantenimiento")
