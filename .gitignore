@@ -29,3 +29,6 @@ media/
 build/
 dist/
 *.egg-info/
+
+# Configuración jira
+docs/jira_variables_entorno.md

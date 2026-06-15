@@ -18,9 +18,9 @@ def obtener_ip(request):
 def registrar_accion(request, accion, descripcion, objeto=None):
     usuario = None
 
-    if request and request.user.is_authenticated:
+    if request and hasattr(request, "user") and request.user.is_authenticated:
         usuario = request.user
-
+       
     content_type = None
     object_id = None
     objeto_repr = ""

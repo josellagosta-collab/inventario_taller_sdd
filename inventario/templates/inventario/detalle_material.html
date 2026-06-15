@@ -146,6 +146,56 @@
 
 <hr>
 
+<h2>Historial completo del material</h2>
+
+<div class="table-responsive">
+  <table class="table table-striped table-bordered align-middle">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Evento</th>
+        <th>Descripción</th>
+        <th>Usuario</th>
+        <th>Enlace</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for evento in historial_material %}
+        <tr>
+          <td>{{ evento.fecha }}</td>
+          <td>
+            <span class="badge bg-secondary">
+              {{ evento.tipo }}
+            </span>
+          </td>
+          <td>{{ evento.titulo }}</td>
+          <td>{{ evento.descripcion }}</td>
+          <td>{{ evento.usuario }}</td>
+          <td>
+            {% if evento.url %}
+              <a href="{{ evento.url }}" class="btn btn-sm btn-outline-primary">
+                Ver
+              </a>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">
+            Este material todavía no tiene historial registrado.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<hr>
+
 <h2>Movimientos de inventario</h2>
 
 <table class="table table-bordered">

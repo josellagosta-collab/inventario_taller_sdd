@@ -255,6 +255,7 @@ Preparar el entorno de desarrollo.
 - BL-070 [Hecho] Registrar devoluciones.
 - BL-071 [Pendiente] Registrar traslados.
 - BL-072 [Hecho] Crear listado de movimientos.
+- BL-123 [Hecho] Crear historial completo del material.
 
 ---
 
@@ -465,7 +466,7 @@ Para considerar finalizada la versión 1.0 deberán estar completadas:
 |---|---:|
 | Épicas | 15 |
 | Historias de usuario | 24 |
-| Tareas técnicas | 122 |
+| Tareas técnicas | 123 |
 
 ---
 

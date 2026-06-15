@@ -1,4 +1,7 @@
+from datetime import datetime, time
+
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from .models import Material, Categoria, MovimientoInventario
 from .forms import MaterialForm
 from django.db.models import Q
@@ -90,10 +93,135 @@ def lista_materiales(request):
 
 @login_required
 def detalle_material(request, material_id):
-    material = get_object_or_404(Material, id=material_id)
+    material = get_object_or_404(
+        Material.objects.select_related(
+            "categoria",
+            "subcategoria",
+            "proveedor",
+            "ubicacion",
+        ).prefetch_related(
+            "movimientos__usuario",
+            "documentos__usuario",
+            "incidencias__usuario",
+            "reservas__usuario_reserva",
+            "lineas_prestamo__prestamo__usuario_receptor",
+            "lineas_prestamo__prestamo__profesor_responsable",
+        ),
+        id=material_id,
+    )
     return render(request, "inventario/detalle_material.html", {
-        "material": material
+        "material": material,
+        "historial_material": construir_historial_material(material),
     })
+
+
+def convertir_fecha_historial(valor):
+    if isinstance(valor, datetime):
+        return valor
+
+    fecha = datetime.combine(valor, time.min)
+
+    if timezone.is_naive(fecha):
+        return timezone.make_aware(fecha)
+
+    return fecha
+
+
+def construir_historial_material(material):
+    historial = []
+
+    for movimiento in material.movimientos.all():
+        historial.append({
+            "fecha": movimiento.fecha,
+            "tipo": "Movimiento",
+            "titulo": movimiento.get_tipo_display(),
+            "descripcion": movimiento.descripcion or "-",
+            "usuario": movimiento.usuario.username if movimiento.usuario else "-",
+            "url": "",
+        })
+
+    for documento in material.documentos.all():
+        historial.append({
+            "fecha": documento.fecha_subida,
+            "tipo": "Documento",
+            "titulo": documento.nombre,
+            "descripcion": documento.get_tipo_documento_display(),
+            "usuario": documento.usuario.username if documento.usuario else "-",
+            "url": documento.archivo.url if documento.archivo else "",
+        })
+
+    for incidencia in material.incidencias.all():
+        historial.append({
+            "fecha": incidencia.fecha_creacion,
+            "tipo": "Incidencia",
+            "titulo": incidencia.titulo,
+            "descripcion": (
+                f"{incidencia.get_estado_display()} - "
+                f"{incidencia.get_prioridad_display()}"
+            ),
+            "usuario": incidencia.usuario.username if incidencia.usuario else "-",
+            "url": reverse("incidencias:detalle_incidencia", args=[incidencia.id]),
+        })
+
+        if incidencia.fecha_cierre:
+            historial.append({
+                "fecha": incidencia.fecha_cierre,
+                "tipo": "Incidencia",
+                "titulo": f"Cierre de incidencia: {incidencia.titulo}",
+                "descripcion": incidencia.solucion or "Incidencia cerrada.",
+                "usuario": incidencia.usuario.username if incidencia.usuario else "-",
+                "url": reverse("incidencias:detalle_incidencia", args=[incidencia.id]),
+            })
+
+    for reserva in material.reservas.all():
+        historial.append({
+            "fecha": convertir_fecha_historial(reserva.fecha_reserva),
+            "tipo": "Reserva",
+            "titulo": f"Reserva #{reserva.id}",
+            "descripcion": (
+                f"{reserva.get_estado_display()} - "
+                f"Recogida prevista: {reserva.fecha_prevista_recogida}"
+            ),
+            "usuario": reserva.usuario_reserva.username,
+            "url": reverse("prestamos:detalle_reserva", args=[reserva.id]),
+        })
+
+    prestamos_incluidos = set()
+
+    for linea in material.lineas_prestamo.all():
+        prestamo = linea.prestamo
+
+        if prestamo.id in prestamos_incluidos:
+            continue
+
+        prestamos_incluidos.add(prestamo.id)
+        historial.append({
+            "fecha": convertir_fecha_historial(prestamo.fecha_prestamo),
+            "tipo": "Préstamo",
+            "titulo": f"Préstamo #{prestamo.id}",
+            "descripcion": (
+                f"{prestamo.get_estado_display()} - "
+                f"Devolución prevista: {prestamo.fecha_prevista_devolucion}"
+            ),
+            "usuario": prestamo.usuario_receptor.username,
+            "url": reverse("prestamos:detalle_prestamo", args=[prestamo.id]),
+        })
+
+        if prestamo.fecha_devolucion_real:
+            historial.append({
+                "fecha": convertir_fecha_historial(prestamo.fecha_devolucion_real),
+                "tipo": "Devolución",
+                "titulo": f"Devolución préstamo #{prestamo.id}",
+                "descripcion": prestamo.get_estado_display(),
+                "usuario": prestamo.usuario_receptor.username,
+                "url": reverse("prestamos:detalle_prestamo", args=[prestamo.id]),
+            })
+
+    return sorted(
+        historial,
+        key=lambda evento: evento["fecha"],
+        reverse=True,
+    )
 
 
 @login_required
