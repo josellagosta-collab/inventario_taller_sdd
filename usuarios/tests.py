@@ -1,4 +1,7 @@
-from django.contrib.auth.models import Group, User
+from io import StringIO
+
+from django.contrib.auth.models import Group, Permission, User
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
@@ -122,3 +125,37 @@ class LogoutTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Has cerrado sesión correctamente.")
+
+
+class InicializarGruposCommandTests(TestCase):
+    def test_crea_grupos_base_con_permisos(self):
+        salida = StringIO()
+
+        call_command("inicializar_grupos", stdout=salida)
+
+        for nombre_grupo in ["Administradores", "Profesores", "Técnicos", "Alumnos"]:
+            self.assertTrue(Group.objects.filter(name=nombre_grupo).exists())
+
+        total_permisos = Permission.objects.count()
+        administradores = Group.objects.get(name="Administradores")
+        profesores = Group.objects.get(name="Profesores")
+        tecnicos = Group.objects.get(name="Técnicos")
+        alumnos = Group.objects.get(name="Alumnos")
+
+        self.assertEqual(administradores.permissions.count(), total_permisos)
+        self.assertGreater(profesores.permissions.count(), 0)
+        self.assertGreater(tecnicos.permissions.count(), 0)
+        self.assertGreater(alumnos.permissions.count(), 0)
+        self.assertIn("Inicialización de grupos completada", salida.getvalue())
+
+    def test_asigna_usuario_al_grupo_administradores(self):
+        usuario = User.objects.create_user(
+            username="admin",
+            password="testpass123",
+        )
+
+        call_command("inicializar_grupos", admin_user=["admin"], stdout=StringIO())
+
+        self.assertTrue(
+            usuario.groups.filter(name="Administradores").exists()
+        )

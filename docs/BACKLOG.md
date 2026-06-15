@@ -16,6 +16,7 @@
 
 ## Cambios aceptados
 
+- **2026-06-15:** Permisos base configurados por grupos. El comando `inicializar_grupos` crea y actualiza `Administradores`, `Profesores`, `Técnicos` y `Alumnos` con permisos de modelo coherentes.
 - **2026-06-15:** Dashboard actualizado con contador de revisiones pendientes, enlazado al filtro de planes de mantenimiento pendientes.
 - **2026-06-15:** Traslado de materiales implementado. Permite cambiar la ubicación de un material, registra movimiento de tipo `traslado` y deja constancia en auditoría.
 - **2026-06-14:** Navegación superior simplificada y menú lateral izquierdo aceptados por ahora. La cabecera queda reservada para Dashboard, Administración, usuario autenticado y cierre de sesión. El resto de accesos se agrupan en menú lateral por módulos.
@@ -403,7 +404,7 @@ Preparar el entorno de desarrollo.
 
 ### Tareas
 
-- BL-107 [Parcial] Configurar permisos.
+- BL-107 [Hecho] Configurar permisos.
 - BL-108 [Hecho] Configurar grupos.
 - BL-109 [Hecho] Configurar CSRF.
 - BL-110 [Hecho] Configurar validaciones.
