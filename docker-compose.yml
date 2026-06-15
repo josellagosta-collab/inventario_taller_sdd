@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15
+    container_name: inventario_taller_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: inventario_taller
+      POSTGRES_USER: inventario_user
+      POSTGRES_PASSWORD: Inventario1234
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: inventario_taller_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  media_data:
+  static_data:
