@@ -23,6 +23,10 @@ services:
       - static_data:/app/staticfiles
     depends_on:
       - db
+    command: >
+        sh -c "python manage.py migrate --noinput &&
+              python manage.py collectstatic --noinput &&
+              gunicorn inventario_taller.wsgi:application --bind 0.0.0.0:8000"
 
 volumes:
   postgres_data:
